@@ -101,6 +101,8 @@ const EMPTY_FORM = {
   derivaciones_hec: "", derivaciones_hcsba: "", derivaciones_huap: "",
   tiempo_espera: "",
   tiene_refuerzo: false, tipo_refuerzo: "", horas_refuerzo: "",
+  refuerzo_medico: false, refuerzo_enfermera: false, refuerzo_tens: false,
+  refuerzo_kinesiologo: false, refuerzo_administrativo: false,
   observaciones: "",
 };
 
@@ -5623,13 +5625,40 @@ export default function App() {
                   </label>
                 </div>
                 {form.tiene_refuerzo && (
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                    <div>
-                      <label style={labelS}>Tipo de Refuerzo</label>
-                      <select name="tipo_refuerzo" value={form.tipo_refuerzo} onChange={handleChange} style={inpS}>
-                        <option value="">Seleccionar...</option>
-                        {["Médico","Enfermero/a","Técnico de Enfermería","Administrativo","Otro"].map(t => <option key={t}>{t}</option>)}
-                      </select>
+                  <div style={{ marginTop: 12 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, marginBottom: 10 }}>
+                      Selecciona los profesionales con refuerzo:
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+                      {[
+                        { key: "refuerzo_medico",        label: "👨‍⚕️ Médico" },
+                        { key: "refuerzo_enfermera",     label: "👩‍⚕️ Enfermera" },
+                        { key: "refuerzo_tens",          label: "🩺 TENS" },
+                        { key: "refuerzo_kinesiologo",   label: "🏃 Kinesiólogo" },
+                        { key: "refuerzo_administrativo",label: "💼 Administrativo" },
+                      ].map(({ key, label }) => (
+                        <div key={key} style={{
+                          display: "flex", alignItems: "center", justifyContent: "space-between",
+                          background: form[key] ? "#d4edda" : "#fff",
+                          border: `1.5px solid ${form[key] ? P.verde : P.azulMid}`,
+                          borderRadius: 8, padding: "8px 14px", transition: "all 0.15s"
+                        }}>
+                          <label style={{ fontSize: 13, fontWeight: 600, color: P.azulDark, cursor: "pointer", flex: 1 }}
+                            htmlFor={key}>{label}</label>
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <label style={{ fontSize: 12, fontWeight: 700, color: form[key] ? P.verde : P.grisMid, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                              <input type="radio" name={key} id={key} checked={form[key] === true}
+                                onChange={() => setForm(f => ({ ...f, [key]: true }))}
+                                style={{ accentColor: P.verde }} /> Sí
+                            </label>
+                            <label style={{ fontSize: 12, fontWeight: 700, color: !form[key] ? "#c0392b" : P.grisMid, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                              <input type="radio" name={key} checked={form[key] === false}
+                                onChange={() => setForm(f => ({ ...f, [key]: false }))}
+                                style={{ accentColor: "#c0392b" }} /> No
+                            </label>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                     <Fld label="Horas de Refuerzo" name="horas_refuerzo" type="number" value={form.horas_refuerzo} onChange={handleChange} ls={labelS} is={inpS} />
                   </div>
