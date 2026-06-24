@@ -4914,6 +4914,8 @@ export default function App() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [editId, setEditId] = useState(null);
   const [tab, setTab] = useState("dashboard");
+  const [importando, setImportando] = useState(false);
+  const [importResultado, setImportResultado] = useState(null);
   const [filtroSemana, setFiltroSemana] = useState("Todas");
   const [filtroEstab, setFiltroEstab] = useState("Todos");
   const [filtroPolo, setFiltroPolo] = useState("Todos");
@@ -5098,20 +5100,123 @@ export default function App() {
     };
   }, []);
 
+  const handleImportExcel = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImportando(true);
+    setImportResultado(null);
+    try {
+      const buffer = await file.arrayBuffer();
+      const wb = XLSX.read(buffer);
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+
+      // Fila 1 = fechas, Fila 2 = headers de columnas, Filas 3+ = establecimientos
+      const COLS_POR_DIA = 5; // TOTAL DEMANDA, ATENCIONES TOTALES, RESP, ESPERA, ABANDONOS
+      const fechasFila = raw[1] || [];
+      const headersFila = raw[2] || [];
+
+      // Mapear índice de columna → fecha
+      const fechaMap = {};
+      for (let c = 1; c < fechasFila.length; c++) {
+        const v = fechasFila[c];
+        if (v && typeof v === "number") {
+          // XLSX almacena fechas como número serial
+          const d = XLSX.SSF.parse_date_code(v);
+          if (d) {
+            const fecha = `${d.y}-${String(d.m).padStart(2,"0")}-${String(d.d).padStart(2,"0")}`;
+            fechaMap[c] = fecha;
+          }
+        } else if (v instanceof Date || (v && v.getFullYear)) {
+          const fecha = v.toISOString().slice(0,10);
+          fechaMap[c] = fecha;
+        }
+      }
+
+      const registrosNuevos = [];
+      // Filas de datos (desde fila índice 3 en adelante, saltar TOTAL)
+      for (let r = 3; r < raw.length; r++) {
+        const fila = raw[r];
+        const estab = fila[0];
+        if (!estab || String(estab).toUpperCase().includes("TOTAL")) continue;
+
+        // Recorrer cada grupo de columnas por fecha
+        for (const [colStr, fecha] of Object.entries(fechaMap)) {
+          const c = parseInt(colStr);
+          const header = headersFila[c];
+          if (!header || String(header).toUpperCase().includes("TOTAL")) continue;
+
+          // Tomar bloque de 5 columnas a partir de c
+          const demanda    = fila[c]   ?? null;
+          const atendidos  = fila[c+1] ?? null;
+          const resp       = fila[c+2] ?? null;
+          const espera     = fila[c+3] ?? null;
+          const abandonos  = fila[c+4] ?? null;
+
+          // Solo guardar si hay al menos demanda
+          if (demanda === null && atendidos === null) continue;
+
+          registrosNuevos.push({
+            fecha,
+            establecimiento: String(estab).trim(),
+            demanda_total:            demanda   !== null ? Number(demanda)   : null,
+            pacientes_atendidos:      atendidos !== null ? Number(atendidos) : null,
+            atenciones_respiratorias: resp      !== null ? Number(resp)      : null,
+            tiempo_espera:            espera    !== null ? Number(espera)    : null,
+            abandonos:                abandonos !== null ? Number(abandonos) : null,
+          });
+        }
+      }
+
+      if (registrosNuevos.length === 0) {
+        setImportResultado({ ok: false, msg: "No se encontraron datos válidos en el archivo." });
+        return;
+      }
+
+      // Insertar en lotes de 100
+      let insertados = 0;
+      for (let i = 0; i < registrosNuevos.length; i += 100) {
+        const lote = registrosNuevos.slice(i, i + 100);
+        const { error } = await supabase.from("registros").insert(lote);
+        if (error) throw error;
+        insertados += lote.length;
+      }
+
+      setImportResultado({ ok: true, msg: `✅ ${insertados} registros importados correctamente desde ${file.name}` });
+      e.target.value = "";
+    } catch (err) {
+      setImportResultado({ ok: false, msg: `❌ Error al importar: ${err.message}` });
+    } finally {
+      setImportando(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!form.fecha || !form.establecimiento || !form.demanda_total) {
       showToast("Completa los campos obligatorios: fecha, establecimiento y demanda", "error");
       return;
     }
+    // Convertir campos numéricos vacíos a null para Supabase
+    const limpiarForm = (f) => {
+      const numericos = ["demanda_total","pacientes_atendidos","atenciones_respiratorias",
+        "abandonos","derivaciones_hec","derivaciones_hcsba","derivaciones_huap",
+        "tiempo_espera","horas_refuerzo"];
+      const limpio = { ...f };
+      numericos.forEach(k => { if (limpio[k] === "" || limpio[k] === undefined) limpio[k] = null; });
+      if (limpio.tipo_refuerzo === "") limpio.tipo_refuerzo = null;
+      if (limpio.observaciones === "") limpio.observaciones = null;
+      if (limpio.semana_epi === "") limpio.semana_epi = null;
+      return limpio;
+    };
     try {
       if (editId !== null) {
-        const { id: _id, created_at: _ca, ...data } = form;
+        const { id: _id, created_at: _ca, ...data } = limpiarForm(form);
         const { error } = await supabase.from("registros").update(data).eq("id", editId);
         if (error) throw error;
         showToast("Registro actualizado correctamente");
         setEditId(null);
       } else {
-        const { error } = await supabase.from("registros").insert({ ...form });
+        const { error } = await supabase.from("registros").insert(limpiarForm(form));
         if (error) throw error;
         showToast("Registro guardado correctamente");
       }
@@ -5300,6 +5405,7 @@ export default function App() {
             { id: "formulario", label: "➕ Ingresar Registro" },
             { id: "tabla", label: "📋 Tabla de Datos" },
             { id: "ambulancias", label: "🚑 Retenciones Ambulancias" },
+            { id: "importar", label: "📥 Importar Excel" },
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               background: tab === t.id ? P.bg : "transparent",
