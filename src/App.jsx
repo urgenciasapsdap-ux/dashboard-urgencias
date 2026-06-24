@@ -5096,12 +5096,31 @@ export default function App() {
   // ── Suscripciones Firestore en tiempo real ──────────────────────────────
   useEffect(() => {
     // Carga inicial de registros
+    // Traer todos los registros en lotes de 1000 (límite de Supabase)
+    const fetchAll = async (tabla) => {
+      const pageSize = 1000;
+      let all = [];
+      let from = 0;
+      while (true) {
+        const { data, error } = await supabase
+          .from(tabla)
+          .select("*")
+          .order("fecha", { ascending: false })
+          .range(from, from + pageSize - 1);
+        if (error || !data || data.length === 0) break;
+        all = [...all, ...data];
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
+      return all;
+    };
+
     const fetchData = async () => {
       try {
-        const { data: regs } = await supabase.from("registros").select("*").order("fecha", { ascending: false });
-        setRegistros(regs || []);
-        const { data: ambs } = await supabase.from("retenciones_ambulancias").select("*").order("fecha", { ascending: false });
-        setRegistrosAmbulancias(ambs || []);
+        const regs = await fetchAll("registros");
+        setRegistros(regs);
+        const ambs = await fetchAll("retenciones_ambulancias");
+        setRegistrosAmbulancias(ambs);
       } catch {
         // silencioso
       } finally {
@@ -5114,16 +5133,14 @@ export default function App() {
     const chanRegistros = supabase
       .channel("registros-changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "registros" }, () => {
-        supabase.from("registros").select("*").order("fecha", { ascending: false })
-          .then(({ data }) => setRegistros(data || []));
+        fetchAll("registros").then(data => setRegistros(data));
       })
       .subscribe();
 
     const chanAmbulancias = supabase
       .channel("ambulancias-changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "retenciones_ambulancias" }, () => {
-        supabase.from("retenciones_ambulancias").select("*").order("fecha", { ascending: false })
-          .then(({ data }) => setRegistrosAmbulancias(data || []));
+        fetchAll("retenciones_ambulancias").then(data => setRegistrosAmbulancias(data));
       })
       .subscribe();
 
