@@ -4895,16 +4895,18 @@ const DEMO_DATA = [
 
 // Mapeo establecimiento → polo
 const POLO_MAP = {
-  "Voullieme": "Polo Cerrillos Maipú",
-  "SAR Pincheira": "Polo Cerrillos Maipú",
-  "Maipú": "Polo Cerrillos Maipú",
-  "Juricic": "Polo Cerrillos Maipú",
-  "SAR Michelle Bachelet": "Polo Cerrillos Maipú",
-  "Insunza": "Polo Cerrillos Maipú",
-  "CESFAM N°1": "Polo Santiago Estación Central",
-  "Domeyko": "Polo Santiago Estación Central",
-  "Padre Vicente": "Polo Santiago Estación Central",
-  "Chuchunco": "Polo Santiago Estación Central",
+  // Polo Cerrillos Maipú
+  "SAPU Dr. Norman Voulliéme":          "Polo Cerrillos Maipú",
+  "SAR Enfermera Sofía Pincheira":       "Polo Cerrillos Maipú",
+  "SAPU Maipú":                          "Polo Cerrillos Maipú",
+  "SAPU Dra. Ana María Juricic":         "Polo Cerrillos Maipú",
+  "SAR Michelle Bachelet":               "Polo Cerrillos Maipú",
+  "SAPU Dr. Iván Insunza":               "Polo Cerrillos Maipú",
+  // Polo Santiago Estación Central
+  "SAPU Consultorio Nº1":                "Polo Santiago Estación Central",
+  "SAPU Ignacio Domeyko":                "Polo Santiago Estación Central",
+  "SAPU Padre Vicente Irarrázabal":      "Polo Santiago Estación Central",
+  "SAPU San José de Chuchunco":          "Polo Santiago Estación Central",
 };
 
 export default function App() {
