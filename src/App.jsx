@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import * as XLSX from "xlsx";
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -4919,6 +4919,11 @@ export default function App() {
   const [importando, setImportando] = useState(false);
   const [importResultado, setImportResultado] = useState(null);
   const [filtroSemana, setFiltroSemana] = useState("Todas");
+  const [cmpP1desde, setCmpP1desde] = useState("");
+  const [cmpP1hasta, setCmpP1hasta] = useState("");
+  const [cmpP2desde, setCmpP2desde] = useState("");
+  const [cmpP2hasta, setCmpP2hasta] = useState("");
+  const [mostrarComparador, setMostrarComparador] = useState(false);
   const [filtroEstab, setFiltroEstab] = useState("Todos");
   const [filtroPolo, setFiltroPolo] = useState("Todos");
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -4936,6 +4941,32 @@ export default function App() {
   };
 
   const semanas = useMemo(() => ["Todas", ...new Set(registros.map(r => r.semana_epi))].sort(), [registros]);
+  const semanasOpts = useMemo(() => [...new Set(registros.map(r => r.semana_epi).filter(Boolean))].sort(), [registros]);
+
+  // Comparador: calcular métricas para un rango de SE
+  const calcMetricasRango = useCallback((desde, hasta) => {
+    if (!desde || !hasta) return null;
+    const rango = semanasOpts.filter(se => se >= desde && se <= hasta);
+    const regs = registros.filter(r =>
+      rango.includes(r.semana_epi) &&
+      (filtroPolo === "Todos" || POLO_MAP[r.establecimiento] === filtroPolo) &&
+      (filtroEstab === "Todos" || r.establecimiento === filtroEstab)
+    );
+    if (regs.length === 0) return null;
+    const sum = (key) => regs.reduce((a, r) => a + Number(r[key] || 0), 0);
+    const conEspera = regs.filter(r => r.tiempo_espera != null && r.tiempo_espera !== "");
+    return {
+      semanas: rango.length,
+      registros: regs.length,
+      demanda:   sum("demanda_total"),
+      atendidos: sum("pacientes_atendidos"),
+      resp:      sum("atenciones_respiratorias"),
+      abandonos: sum("abandonos"),
+      espera:    conEspera.length ? Math.round(conEspera.reduce((a,r) => a + Number(r.tiempo_espera), 0) / conEspera.length) : 0,
+      tasaAbandono: sum("demanda_total") ? ((sum("abandonos") / sum("demanda_total")) * 100).toFixed(1) : 0,
+      pctResp:   sum("pacientes_atendidos") ? ((sum("atenciones_respiratorias") / sum("pacientes_atendidos")) * 100).toFixed(1) : 0,
+    };
+  }, [registros, semanasOpts, filtroPolo, filtroEstab]);
   const estabs  = useMemo(() => ["Todos", ...new Set(registros.map(r => r.establecimiento))], [registros]);
   const POLOS   = ["Todos", "Polo Cerrillos Maipú", "Polo Santiago Estación Central"];
 
@@ -5680,6 +5711,36 @@ export default function App() {
           </div>
         )}
 
+        {tab === "dashboard" && <>
+          <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 14, padding: "20px 24px", marginTop: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: mostrarComparador ? 20 : 0 }}>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: P.azulDark }}>📊 Comparar Períodos</div>
+                <div style={{ fontSize: 12, color: P.muted }}>Compara métricas entre dos rangos de semanas epidemiológicas</div>
+              </div>
+              <button onClick={() => setMostrarComparador(v => !v)} style={{
+                background: mostrarComparador ? P.azulLight : P.azul, color: mostrarComparador ? P.azul : "#fff",
+                border: `1px solid ${P.azul}`, borderRadius: 8, padding: "7px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer"
+              }}>{mostrarComparador ? "Ocultar" : "Abrir comparador"}</button>
+            </div>
+            {mostrarComparador && <ComparadorPeriodos
+              semanasOpts={semanasOpts}
+              p1desde={cmpP1desde} setP1desde={setCmpP1desde}
+              p1hasta={cmpP1hasta} setP1hasta={setCmpP1hasta}
+              p2desde={cmpP2desde} setP2desde={setCmpP2desde}
+              p2hasta={cmpP2hasta} setP2hasta={setCmpP2hasta}
+              calcMetricasRango={calcMetricasRango}
+              inpS={inpS} P={P}
+            />}
+          </div>
+          <ResumenAmbulancias
+            registrosAmbulancias={registrosAmbulancias}
+            filtroEstab={filtroEstab} filtroPolo={filtroPolo}
+            POLO_MAP={POLO_MAP} P={P}
+          />
+        </>
+        }
+
         {/* ── FORMULARIO ──────────────────────────────────────── */}
         {tab === "formulario" && (
           <div style={{ maxWidth: 740 }}>
@@ -6118,6 +6179,155 @@ function Fld({ label, name, type="text", value, onChange, disabled, ls, is }) {
       <label style={ls}>{label}</label>
       <input type={type} name={name} value={value} onChange={onChange} disabled={disabled}
         style={{ ...is, opacity: disabled ? 0.6 : 1 }} min={type === "number" ? "0" : undefined} />
+    </div>
+  );
+}
+
+// ── Comparador de períodos ────────────────────────────────────────────────────
+function ComparadorPeriodos({ semanasOpts, p1desde, setP1desde, p1hasta, setP1hasta, p2desde, setP2desde, p2hasta, setP2hasta, calcMetricasRango, inpS, P }) {
+  const m1 = calcMetricasRango(p1desde, p1hasta);
+  const m2 = calcMetricasRango(p2desde, p2hasta);
+  const selStyle = { ...inpS, width: 90, padding: "6px 8px", fontSize: 13 };
+
+  const diff = (v1, v2, invert=false) => {
+    if (v1==null || v2==null || Number(v2)===0) return null;
+    const pct = (((Number(v1)-Number(v2))/Math.abs(Number(v2)))*100).toFixed(1);
+    const up = Number(pct) > 0;
+    const good = invert ? !up : up;
+    return <span style={{ fontSize: 11, fontWeight: 700, color: good ? "#27ae60" : "#e74c3c", marginLeft: 6 }}>
+      {up ? "▲" : "▼"}{Math.abs(pct)}%
+    </span>;
+  };
+
+  const Row = ({ label, k, invert=false }) => (
+    <tr>
+      <td style={{ padding: "8px 12px", fontSize: 13, color: P.muted, borderBottom: `1px solid ${P.border}` }}>{label}</td>
+      <td style={{ padding: "8px 12px", fontSize: 13, fontWeight: 700, color: "#2980b9", borderBottom: `1px solid ${P.border}`, textAlign: "right" }}>
+        {m1 ? (m1[k] ?? "—") : "—"}
+      </td>
+      <td style={{ padding: "8px 12px", fontSize: 13, fontWeight: 700, color: "#27ae60", borderBottom: `1px solid ${P.border}`, textAlign: "right" }}>
+        {m2 ? (m2[k] ?? "—") : "—"}
+        {m1 && m2 ? diff(m1[k], m2[k], invert) : null}
+      </td>
+    </tr>
+  );
+
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+        {[
+          { label: "📘 Período 1", desde: p1desde, setDesde: setP1desde, hasta: p1hasta, setHasta: setP1hasta, color: "#2980b9" },
+          { label: "📗 Período 2", desde: p2desde, setDesde: setP2desde, hasta: p2hasta, setHasta: setP2hasta, color: "#27ae60" },
+        ].map(({ label, desde, setDesde, hasta, setHasta, color }) => (
+          <div key={label} style={{ background: P.azulLight, borderRadius: 10, padding: "14px 16px", border: `2px solid ${color}30` }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color, marginBottom: 10 }}>{label}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 12, color: P.muted }}>Desde</span>
+              <select value={desde} onChange={e => setDesde(e.target.value)} style={selStyle}>
+                <option value="">SE...</option>
+                {semanasOpts.map(se => <option key={se}>{se}</option>)}
+              </select>
+              <span style={{ fontSize: 12, color: P.muted }}>Hasta</span>
+              <select value={hasta} onChange={e => setHasta(e.target.value)} style={selStyle}>
+                <option value="">SE...</option>
+                {semanasOpts.map(se => <option key={se}>{se}</option>)}
+              </select>
+            </div>
+            {desde && hasta && <div style={{ fontSize: 11, color: P.muted, marginTop: 6 }}>
+              {semanasOpts.filter(se => se >= desde && se <= hasta).length} semanas seleccionadas
+            </div>}
+          </div>
+        ))}
+      </div>
+
+      {(m1 || m2) ? (
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                <th style={{ padding: "10px 12px", background: P.azulLight, color: P.azulDark, fontSize: 12, fontWeight: 800, textAlign: "left" }}>Métrica</th>
+                <th style={{ padding: "10px 12px", background: "#2980b915", color: "#2980b9", fontSize: 12, fontWeight: 800, textAlign: "right" }}>
+                  📘 {p1desde}{p1hasta && p1hasta !== p1desde ? ` → ${p1hasta}` : ""}
+                </th>
+                <th style={{ padding: "10px 12px", background: "#27ae6015", color: "#27ae60", fontSize: 12, fontWeight: 800, textAlign: "right" }}>
+                  📗 {p2desde}{p2hasta && p2hasta !== p2desde ? ` → ${p2hasta}` : ""}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <Row label="Semanas comparadas"        k="semanas" />
+              <Row label="Demanda Total"             k="demanda" />
+              <Row label="Pacientes Atendidos"       k="atendidos" />
+              <Row label="Atenciones Respiratorias"  k="resp" />
+              <Row label="Abandonos"                 k="abandonos"    invert={true} />
+              <Row label="Tasa de Abandono (%)"      k="tasaAbandono" invert={true} />
+              <Row label="% Respiratorio"            k="pctResp" />
+              <Row label="T° Espera Prom. (min)"     k="espera"       invert={true} />
+            </tbody>
+          </table>
+          <div style={{ fontSize: 11, color: P.muted, marginTop: 8 }}>▲▼ variación del Período 1 respecto al Período 2</div>
+        </div>
+      ) : (
+        <div style={{ textAlign: "center", padding: 24, color: P.muted, fontSize: 13 }}>
+          Selecciona un rango de SE en cada período para comparar
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Resumen Ambulancias ───────────────────────────────────────────────────────
+function ResumenAmbulancias({ registrosAmbulancias, filtroEstab, filtroPolo, POLO_MAP, P }) {
+  const ambFiltrados = registrosAmbulancias.filter(r =>
+    (filtroEstab === "Todos" || r.establecimiento === filtroEstab) &&
+    (filtroPolo === "Todos" || POLO_MAP[r.establecimiento] === filtroPolo)
+  );
+  if (ambFiltrados.length === 0) return null;
+
+  const tiempos = ambFiltrados.filter(r => r.tiempo_retencion != null).map(r => Number(r.tiempo_retencion));
+  const promedio = tiempos.length ? Math.round(tiempos.reduce((a,b) => a+b, 0) / tiempos.length) : 0;
+  const maximo   = tiempos.length ? Math.max(...tiempos) : 0;
+
+  const porEstab = {};
+  ambFiltrados.forEach(r => {
+    if (!porEstab[r.establecimiento]) porEstab[r.establecimiento] = { total: 0, tiempos: [] };
+    porEstab[r.establecimiento].total++;
+    if (r.tiempo_retencion != null) porEstab[r.establecimiento].tiempos.push(Number(r.tiempo_retencion));
+  });
+
+  return (
+    <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 14, padding: "20px 24px", marginTop: 24 }}>
+      <div style={{ fontSize: 15, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>🚑 Retenciones de Ambulancias</div>
+      <div style={{ fontSize: 12, color: P.muted, marginBottom: 16 }}>Resumen según filtros aplicados</div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
+        {[
+          { label: "Total Retenciones", val: ambFiltrados.length, color: P.azul },
+          { label: "Tiempo Promedio",   val: `${promedio} min`,   color: "#e67e22" },
+          { label: "Tiempo Máximo",     val: `${maximo} min`,     color: "#e74c3c" },
+        ].map(({ label, val, color }) => (
+          <div key={label} style={{ background: P.azulLight, borderRadius: 10, padding: "12px 16px", borderLeft: `4px solid ${color}` }}>
+            <div style={{ fontSize: 11, color: P.muted, fontWeight: 600 }}>{label}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color }}>{val}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, marginBottom: 10 }}>Por establecimiento</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10 }}>
+        {Object.entries(porEstab).sort((a,b) => b[1].total - a[1].total).map(([estab, data]) => {
+          const prom = data.tiempos.length ? Math.round(data.tiempos.reduce((a,b)=>a+b,0)/data.tiempos.length) : 0;
+          return (
+            <div key={estab} style={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 8, padding: "10px 14px" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, marginBottom: 4 }}>{estab}</div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 12, color: P.muted }}>Retenciones: <b style={{ color: P.azul }}>{data.total}</b></span>
+                <span style={{ fontSize: 12, color: P.muted }}>Prom: <b style={{ color: "#e67e22" }}>{prom} min</b></span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
