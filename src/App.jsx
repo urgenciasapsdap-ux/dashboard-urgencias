@@ -5107,42 +5107,31 @@ export default function App() {
     setImportResultado(null);
     try {
       const buffer = await file.arrayBuffer();
-      // cellDates:true convierte seriales a objetos Date automáticamente
-      const wb = XLSX.read(buffer, { cellDates: true });
+      const wb = XLSX.read(buffer, { cellDates: true, dateNF: "yyyy-mm-dd" });
       const ws = wb.Sheets[wb.SheetNames[0]];
-      const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+      const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: false });
 
-      // Estructura: fila 0 vacía, fila 1 = fechas, fila 2 = encabezados, filas 3+ = establecimientos
-      // Buscar dinámicamente la fila que contiene las fechas
+      // Buscar la fila que tiene fechas (formato yyyy-mm-dd tras dateNF)
+      // y la fila de headers (siguiente fila con texto)
       let filaFechas = -1, filaHeaders = -1, filasDatos = -1;
+      const reDate = /^\d{4}-\d{2}-\d{2}$/;
       for (let r = 0; r < raw.length; r++) {
-        const tieneDate = raw[r].some(v => v instanceof Date);
-        if (tieneDate && filaFechas === -1) { filaFechas = r; filaHeaders = r + 1; filasDatos = r + 2; break; }
+        const tieneFecha = raw[r].some(v => v && reDate.test(String(v)));
+        if (tieneFecha) { filaFechas = r; filaHeaders = r + 1; filasDatos = r + 2; break; }
       }
-      if (filaFechas === -1) throw new Error("No se encontraron fechas en el archivo");
+      if (filaFechas === -1) throw new Error("No se encontraron fechas en el archivo. Verifica el formato.");
 
       const fechasFila  = raw[filaFechas]  || [];
       const headersFila = raw[filaHeaders] || [];
 
-      // Convertir fecha a string YYYY-MM-DD
-      const toISO = (v) => {
-        if (!v) return null;
-        if (v instanceof Date) {
-          const y = v.getFullYear();
-          const m = String(v.getMonth()+1).padStart(2,"0");
-          const d = String(v.getDate()).padStart(2,"0");
-          return `${y}-${m}-${d}`;
-        }
-        return null;
-      };
-
-      // Mapear columna → fecha (solo columnas con fecha válida y header no TOTAL)
-      const fechaMap = {};
-      for (let c = 1; c < fechasFila.length; c++) {
-        const fecha = toISO(fechasFila[c]);
-        const header = headersFila[c];
-        if (fecha && header && !String(header).toUpperCase().includes("TOTAL")) {
-          fechaMap[c] = fecha;
+      // Mapear columna → fecha
+      // Las fechas aparecen cada 5 columnas (TOTAL DEMANDA, ATENCIONES, RESP, ESPERA, ABANDONOS)
+      // La columna de la fecha es donde está la fecha, y las 4 siguientes son sus datos
+      const bloques = []; // [{col, fecha}]
+      for (let c = 0; c < fechasFila.length; c++) {
+        const v = String(fechasFila[c] || "");
+        if (reDate.test(v)) {
+          bloques.push({ col: c, fecha: v });
         }
       }
 
@@ -5152,24 +5141,25 @@ export default function App() {
         const estab = fila[0];
         if (!estab || String(estab).toUpperCase().includes("TOTAL")) continue;
 
-        for (const [colStr, fecha] of Object.entries(fechaMap)) {
-          const c = parseInt(colStr);
-          const demanda   = fila[c]   ?? null;
-          const atendidos = fila[c+1] ?? null;
-          const resp      = fila[c+2] ?? null;
-          const espera    = fila[c+3] ?? null;
-          const abandonos = fila[c+4] ?? null;
+        for (const { col: c, fecha } of bloques) {
+          const demanda   = fila[c]   != null ? Number(fila[c])   : null;
+          const atendidos = fila[c+1] != null ? Number(fila[c+1]) : null;
+          const resp      = fila[c+2] != null ? Number(fila[c+2]) : null;
+          const espera    = fila[c+3] != null ? Number(fila[c+3]) : null;
+          const abandonos = fila[c+4] != null ? Number(fila[c+4]) : null;
 
+          // Solo guardar filas con algún dato numérico válido
           if (demanda === null && atendidos === null) continue;
+          if (isNaN(demanda) && isNaN(atendidos)) continue;
 
           registrosNuevos.push({
             fecha,
             establecimiento:          String(estab).trim(),
-            demanda_total:            demanda   !== null ? Number(demanda)   : null,
-            pacientes_atendidos:      atendidos !== null ? Number(atendidos) : null,
-            atenciones_respiratorias: resp      !== null ? Number(resp)      : null,
-            tiempo_espera:            espera    !== null ? Number(espera)    : null,
-            abandonos:                abandonos !== null ? Number(abandonos) : null,
+            demanda_total:            !isNaN(demanda)   ? demanda   : null,
+            pacientes_atendidos:      !isNaN(atendidos) ? atendidos : null,
+            atenciones_respiratorias: !isNaN(resp)      ? resp      : null,
+            tiempo_espera:            !isNaN(espera)    ? espera    : null,
+            abandonos:                !isNaN(abandonos) ? abandonos : null,
           });
         }
       }
