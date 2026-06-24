@@ -4894,20 +4894,58 @@ const DEMO_DATA = [
 ];
 
 // Mapeo establecimiento → polo
-const POLO_MAP = {
-  // Polo Cerrillos Maipú
+// POLO_MAP: incluye nombres completos (desde Excel) y abreviados (ingreso manual)
+const POLO_MAP_RAW = {
+  // Polo Cerrillos Maipú — nombres completos
   "SAPU Dr. Norman Voulliéme":          "Polo Cerrillos Maipú",
   "SAR Enfermera Sofía Pincheira":       "Polo Cerrillos Maipú",
   "SAPU Maipú":                          "Polo Cerrillos Maipú",
   "SAPU Dra. Ana María Juricic":         "Polo Cerrillos Maipú",
   "SAR Michelle Bachelet":               "Polo Cerrillos Maipú",
   "SAPU Dr. Iván Insunza":               "Polo Cerrillos Maipú",
-  // Polo Santiago Estación Central
+  // Polo Cerrillos Maipú — nombres abreviados (ingreso manual)
+  "Voullieme":                           "Polo Cerrillos Maipú",
+  "Voulliéme":                           "Polo Cerrillos Maipú",
+  "SAR Pincheira":                       "Polo Cerrillos Maipú",
+  "Pincheira":                           "Polo Cerrillos Maipú",
+  "Maipú":                               "Polo Cerrillos Maipú",
+  "Juricic":                             "Polo Cerrillos Maipú",
+  "Michelle Bachelet":                   "Polo Cerrillos Maipú",
+  "Insunza":                             "Polo Cerrillos Maipú",
+  // Polo Santiago Estación Central — nombres completos
   "SAPU Consultorio Nº1":                "Polo Santiago Estación Central",
   "SAPU Ignacio Domeyko":                "Polo Santiago Estación Central",
   "SAPU Padre Vicente Irarrázabal":      "Polo Santiago Estación Central",
   "SAPU San José de Chuchunco":          "Polo Santiago Estación Central",
+  // Polo Santiago Estación Central — nombres abreviados (ingreso manual)
+  "Consultorio Nº1":                     "Polo Santiago Estación Central",
+  "Consultorio N°1":                     "Polo Santiago Estación Central",
+  "SAPU Consultorio N°1":                "Polo Santiago Estación Central",
+  "Domeyko":                             "Polo Santiago Estación Central",
+  "Ignacio Domeyko":                     "Polo Santiago Estación Central",
+  "Padre Vicente":                       "Polo Santiago Estación Central",
+  "Padre Vicente Irarrázabal":           "Polo Santiago Estación Central",
+  "Chuchunco":                           "Polo Santiago Estación Central",
+  "San José de Chuchunco":               "Polo Santiago Estación Central",
 };
+
+// Función que busca polo por nombre exacto o por coincidencia parcial
+const getPolo = (estab) => {
+  if (!estab) return null;
+  // Búsqueda exacta
+  if (POLO_MAP_RAW[estab]) return POLO_MAP_RAW[estab];
+  // Búsqueda parcial (si el nombre contiene alguna clave)
+  for (const [key, polo] of Object.entries(POLO_MAP_RAW)) {
+    if (estab.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(estab.toLowerCase())) {
+      return polo;
+    }
+  }
+  return null;
+};
+
+const POLO_MAP = new Proxy(POLO_MAP_RAW, {
+  get(target, prop) { return getPolo(prop) || target[prop]; }
+});
 
 export default function App() {
   const [registros, setRegistros] = useState([]);
