@@ -5107,58 +5107,64 @@ export default function App() {
     setImportResultado(null);
     try {
       const buffer = await file.arrayBuffer();
-      const wb = XLSX.read(buffer);
+      // cellDates:true convierte seriales a objetos Date automáticamente
+      const wb = XLSX.read(buffer, { cellDates: true });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
 
-      // Fila 1 = fechas, Fila 2 = headers de columnas, Filas 3+ = establecimientos
-      const COLS_POR_DIA = 5; // TOTAL DEMANDA, ATENCIONES TOTALES, RESP, ESPERA, ABANDONOS
-      const fechasFila = raw[1] || [];
-      const headersFila = raw[2] || [];
+      // Estructura: fila 0 vacía, fila 1 = fechas, fila 2 = encabezados, filas 3+ = establecimientos
+      // Buscar dinámicamente la fila que contiene las fechas
+      let filaFechas = -1, filaHeaders = -1, filasDatos = -1;
+      for (let r = 0; r < raw.length; r++) {
+        const tieneDate = raw[r].some(v => v instanceof Date);
+        if (tieneDate && filaFechas === -1) { filaFechas = r; filaHeaders = r + 1; filasDatos = r + 2; break; }
+      }
+      if (filaFechas === -1) throw new Error("No se encontraron fechas en el archivo");
 
-      // Mapear índice de columna → fecha
+      const fechasFila  = raw[filaFechas]  || [];
+      const headersFila = raw[filaHeaders] || [];
+
+      // Convertir fecha a string YYYY-MM-DD
+      const toISO = (v) => {
+        if (!v) return null;
+        if (v instanceof Date) {
+          const y = v.getFullYear();
+          const m = String(v.getMonth()+1).padStart(2,"0");
+          const d = String(v.getDate()).padStart(2,"0");
+          return `${y}-${m}-${d}`;
+        }
+        return null;
+      };
+
+      // Mapear columna → fecha (solo columnas con fecha válida y header no TOTAL)
       const fechaMap = {};
       for (let c = 1; c < fechasFila.length; c++) {
-        const v = fechasFila[c];
-        if (v && typeof v === "number") {
-          // XLSX almacena fechas como número serial
-          const d = XLSX.SSF.parse_date_code(v);
-          if (d) {
-            const fecha = `${d.y}-${String(d.m).padStart(2,"0")}-${String(d.d).padStart(2,"0")}`;
-            fechaMap[c] = fecha;
-          }
-        } else if (v instanceof Date || (v && v.getFullYear)) {
-          const fecha = v.toISOString().slice(0,10);
+        const fecha = toISO(fechasFila[c]);
+        const header = headersFila[c];
+        if (fecha && header && !String(header).toUpperCase().includes("TOTAL")) {
           fechaMap[c] = fecha;
         }
       }
 
       const registrosNuevos = [];
-      // Filas de datos (desde fila índice 3 en adelante, saltar TOTAL)
-      for (let r = 3; r < raw.length; r++) {
+      for (let r = filasDatos; r < raw.length; r++) {
         const fila = raw[r];
         const estab = fila[0];
         if (!estab || String(estab).toUpperCase().includes("TOTAL")) continue;
 
-        // Recorrer cada grupo de columnas por fecha
         for (const [colStr, fecha] of Object.entries(fechaMap)) {
           const c = parseInt(colStr);
-          const header = headersFila[c];
-          if (!header || String(header).toUpperCase().includes("TOTAL")) continue;
+          const demanda   = fila[c]   ?? null;
+          const atendidos = fila[c+1] ?? null;
+          const resp      = fila[c+2] ?? null;
+          const espera    = fila[c+3] ?? null;
+          const abandonos = fila[c+4] ?? null;
 
-          // Tomar bloque de 5 columnas a partir de c
-          const demanda    = fila[c]   ?? null;
-          const atendidos  = fila[c+1] ?? null;
-          const resp       = fila[c+2] ?? null;
-          const espera     = fila[c+3] ?? null;
-          const abandonos  = fila[c+4] ?? null;
-
-          // Solo guardar si hay al menos demanda
           if (demanda === null && atendidos === null) continue;
 
           registrosNuevos.push({
             fecha,
-            establecimiento: String(estab).trim(),
+            establecimiento:          String(estab).trim(),
             demanda_total:            demanda   !== null ? Number(demanda)   : null,
             pacientes_atendidos:      atendidos !== null ? Number(atendidos) : null,
             atenciones_respiratorias: resp      !== null ? Number(resp)      : null,
