@@ -6017,6 +6017,81 @@ export default function App() {
           </div>
         )}
       </div>
+        {/* ── IMPORTAR EXCEL ──────────────────────────────── */}
+        {tab === "importar" && (
+          <div style={{ maxWidth: 600, margin: "0 auto" }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: P.azulDark, marginBottom: 6 }}>📥 Importar desde Excel</div>
+            <p style={{ color: P.muted, fontSize: 13, marginBottom: 24 }}>
+              Sube el archivo Excel con el formato estándar de atenciones. Los datos se cargan automáticamente a Supabase.
+            </p>
+
+            {/* Botón de carga explícito — funciona en móvil */}
+            <div style={{ textAlign: "center", marginBottom: 20 }}>
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleImportExcel}
+                disabled={importando}
+                style={{ display: "none" }}
+                id="import-excel-file"
+              />
+              <label htmlFor="import-excel-file" style={{
+                display: "inline-block",
+                background: importando ? P.grisMid : P.azul,
+                color: "#fff",
+                padding: "14px 32px",
+                borderRadius: 10,
+                fontSize: 15,
+                fontWeight: 700,
+                cursor: importando ? "not-allowed" : "pointer",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+              }}>
+                {importando ? "⏳ Procesando..." : "📂 Seleccionar archivo Excel"}
+              </label>
+              <div style={{ fontSize: 12, color: P.muted, marginTop: 10 }}>
+                Formato .xlsx — mismo formato del reporte semanal SSMC
+              </div>
+            </div>
+
+            {importando && (
+              <div style={{ padding: 16, background: P.azulLight, borderRadius: 10, textAlign: "center", color: P.azul, fontWeight: 700, marginBottom: 16 }}>
+                ⏳ Importando datos... por favor espera
+              </div>
+            )}
+
+            {importResultado && (
+              <div style={{
+                padding: 16, borderRadius: 10, fontWeight: 700, fontSize: 14, marginBottom: 16,
+                background: importResultado.ok ? "#d4edda" : "#fde8e8",
+                color: importResultado.ok ? "#155724" : "#721c24",
+                border: `1px solid ${importResultado.ok ? "#c3e6cb" : "#f5c6cb"}`
+              }}>
+                {importResultado.msg}
+                {importResultado.ok && (
+                  <div style={{ marginTop: 8, fontSize: 12, fontWeight: 400 }}>
+                    Los datos ya aparecen en el Dashboard y la Tabla de Datos.
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark, marginBottom: 12 }}>📋 Formato esperado del Excel</div>
+              {[
+                "Fila 1: Semanas epidemiológicas (SE 01, SE 02…)",
+                "Fila 2: Fechas de cada día (01/01/2026, 02/01/2026…)",
+                "Fila 3: Encabezados (ESTABLECIMIENTO, TOTAL DEMANDA…)",
+                "Filas siguientes: Un establecimiento por fila con sus datos diarios",
+              ].map((item, i) => (
+                <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8, fontSize: 12, color: P.text }}>
+                  <span style={{ color: P.azul, fontWeight: 700, flexShrink: 0 }}>{i+1}.</span>
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       <style>{`@keyframes fadeIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }`}</style>
     </div>
   );
