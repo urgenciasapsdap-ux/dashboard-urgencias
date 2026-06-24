@@ -5172,7 +5172,7 @@ export default function App() {
 
           registrosNuevos.push({
             fecha,
-            semana_epi:               calcularSemanaEpi(fecha),
+            semana_epi:               getEpiWeek(fecha),
             establecimiento:          String(estab).trim(),
             demanda_total:            (demanda   != null && !isNaN(demanda))   ? demanda   : null,
             pacientes_atendidos:      (atendidos != null && !isNaN(atendidos)) ? atendidos : null,
