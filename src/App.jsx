@@ -4955,6 +4955,8 @@ export default function App() {
   const [editId, setEditId] = useState(null);
   const [tab, setTab] = useState("dashboard");
   const [importando, setImportando] = useState(false);
+  const [proyMetodo, setProyMetodo] = useState("historico");
+  const [proySemanas, setProyeSemanas] = useState(4);
   const [importResultado, setImportResultado] = useState(null);
   const [filtroSemana, setFiltroSemana] = useState("Todas");
   const [cmpP1desde, setCmpP1desde] = useState("");
@@ -5507,6 +5509,7 @@ export default function App() {
             { id: "tabla", label: "📋 Tabla de Datos" },
             { id: "ambulancias", label: "🚑 Retenciones Ambulancias" },
             { id: "importar", label: "📥 Importar Excel" },
+            { id: "proyecciones", label: "📈 Proyecciones" },
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               background: tab === t.id ? P.bg : "transparent",
@@ -6225,6 +6228,19 @@ export default function App() {
           </div>
         )}
 
+        {/* ── PROYECCIONES ─────────────────────────────────────── */}
+        {tab === "proyecciones" && (
+          <Proyecciones
+            registros={registros}
+            filtroPolo={filtroPolo}
+            filtroEstab={filtroEstab}
+            metodo={proyMetodo} setMetodo={setProyMetodo}
+            semanas={proySemanas} setSemanas={setProyeSemanas}
+            semanasOpts={semanasOpts}
+            P={P} inpS={inpS}
+          />
+        )}
+
       <style>{`@keyframes fadeIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }`}</style>
     </div>
   );
@@ -6308,7 +6324,7 @@ function ComparadorPeriodos({ semanasOpts, registros, filtroPolo, filtroEstab, p
       </td>
       <td style={{ padding: "8px 12px", fontSize: 13, fontWeight: 700, color: "#27ae60", borderBottom: `1px solid ${P.border}`, textAlign: "right" }}>
         {m2 ? (m2[k] ?? "—") : "—"}
-        {m1 && m2 ? diff(m1[k], m2[k], invert) : null}
+        {m1 && m2 ? diff(m2[k], m1[k], invert) : null}
       </td>
     </tr>
   );
@@ -6437,7 +6453,7 @@ function ComparadorPeriodos({ semanasOpts, registros, filtroPolo, filtroEstab, p
               <Row label="T° Espera Prom. (min)"     k="espera"       invert={true} />
             </tbody>
           </table>
-          <div style={{ fontSize: 11, color: P.muted, marginTop: 8 }}>▲▼ variación del Período 1 respecto al Período 2</div>
+          <div style={{ fontSize: 11, color: P.muted, marginTop: 8 }}>▲▼ variación del Período 2 respecto al Período 1 (referencia)</div>
         </div>
       </>) : (
         <div style={{ textAlign: "center", padding: 24, color: P.muted, fontSize: 13 }}>
@@ -6499,6 +6515,210 @@ function ResumenAmbulancias({ registrosAmbulancias, filtroEstab, filtroPolo, POL
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+// ── Proyecciones ──────────────────────────────────────────────────────────────
+function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, semanas, setSemanas, semanasOpts, P, inpS }) {
+
+  // Filtrar registros según polo y establecimiento
+  const base = registros.filter(r =>
+    (filtroPolo === "Todos" || getPolo(r.establecimiento) === filtroPolo) &&
+    (filtroEstab === "Todos" || r.establecimiento === filtroEstab)
+  );
+
+  // Agrupar por SE → { demanda, resp }
+  const porSE = {};
+  base.forEach(r => {
+    const se = r.semana_epi;
+    if (!se) return;
+    if (!porSE[se]) porSE[se] = { demanda: 0, resp: 0, n: 0 };
+    porSE[se].demanda += Number(r.demanda_total || 0);
+    porSE[se].resp    += Number(r.atenciones_respiratorias || 0);
+    porSE[se].n++;
+  });
+
+  const seOrdenadas = semanasOpts.filter(se => porSE[se]);
+  const historial   = seOrdenadas.map(se => ({ se, ...porSE[se] }));
+
+  // Calcular proyección
+  const proyectar = () => {
+    if (historial.length < 2) return [];
+    const resultado = [];
+    const N = Number(semanas);
+
+    for (let i = 1; i <= N; i++) {
+      const seNum  = historial.length + i;
+      const seLabel = `SE ${String(seNum).padStart(2, "0")} (proy)`;
+
+      let demanda, resp;
+
+      if (metodo === "historico") {
+        // Promedio de todas las semanas históricas
+        demanda = Math.round(historial.reduce((a, s) => a + s.demanda, 0) / historial.length);
+        resp    = Math.round(historial.reduce((a, s) => a + s.resp, 0)    / historial.length);
+      } else {
+        // Tendencia: regresión lineal simple sobre últimas 8 semanas
+        const ultimas = historial.slice(-8);
+        const n = ultimas.length;
+        const xs = ultimas.map((_, j) => j + 1);
+        const meanX = xs.reduce((a, b) => a + b, 0) / n;
+
+        const linReg = (vals) => {
+          const meanY = vals.reduce((a, b) => a + b, 0) / n;
+          const num   = xs.reduce((a, x, j) => a + (x - meanX) * (vals[j] - meanY), 0);
+          const den   = xs.reduce((a, x) => a + (x - meanX) ** 2, 0);
+          const slope = den ? num / den : 0;
+          const inter = meanY - slope * meanX;
+          return Math.max(0, Math.round(inter + slope * (n + i)));
+        };
+
+        demanda = linReg(ultimas.map(s => s.demanda));
+        resp    = linReg(ultimas.map(s => s.resp));
+      }
+
+      resultado.push({ se: seLabel, demanda, resp, proyectado: true });
+    }
+    return resultado;
+  };
+
+  const proyecciones = proyectar();
+
+  // Datos para el gráfico: últimas 12 semanas históricas + proyecciones
+  const ultimasHist = historial.slice(-12).map(s => ({ ...s, proyectado: false }));
+  const dataGrafico = [...ultimasHist, ...proyecciones];
+
+  const btnStyle = (activo) => ({
+    padding: "6px 14px", borderRadius: 6, fontSize: 12, fontWeight: 700,
+    cursor: "pointer", border: `1px solid ${P.border}`,
+    background: activo ? P.azul : P.azulLight,
+    color: activo ? "#fff" : P.azulDark,
+  });
+
+  if (historial.length < 2) return (
+    <div style={{ textAlign: "center", padding: 60, color: P.muted, fontSize: 14 }}>
+      Necesitas al menos 2 semanas de datos históricos para generar proyecciones.
+    </div>
+  );
+
+  return (
+    <div style={{ maxWidth: 900, margin: "0 auto" }}>
+      <div style={{ fontSize: 20, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>📈 Proyección de Demanda</div>
+      <div style={{ fontSize: 13, color: P.muted, marginBottom: 24 }}>
+        Estimación basada en datos históricos según filtros aplicados
+      </div>
+
+      {/* Controles */}
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "16px 20px", marginBottom: 24, display: "flex", gap: 24, flexWrap: "wrap", alignItems: "center" }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: P.muted, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Método</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button style={btnStyle(metodo === "historico")} onClick={() => setMetodo("historico")}>📊 Promedio histórico</button>
+            <button style={btnStyle(metodo === "tendencia")} onClick={() => setMetodo("tendencia")}>📉 Tendencia reciente</button>
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: P.muted, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Semanas a proyectar</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {[2, 4, 6, 8].map(n => (
+              <button key={n} style={btnStyle(semanas === n)} onClick={() => setSemanas(n)}>{n}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{ marginLeft: "auto", background: P.azulLight, borderRadius: 8, padding: "10px 16px", fontSize: 12, color: P.azulDark }}>
+          <b>{historial.length}</b> semanas históricas · <b>{proyecciones.length}</b> proyectadas
+        </div>
+      </div>
+
+      {/* Gráfico Demanda */}
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "20px 16px", marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: P.azulDark, marginBottom: 16 }}>
+          Demanda Total
+          <span style={{ fontSize: 11, fontWeight: 400, color: P.muted, marginLeft: 12 }}>— histórico &nbsp;&nbsp; - - - proyectado</span>
+        </div>
+        <ResponsiveContainer width="100%" height={260}>
+          <ComposedChart data={dataGrafico} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e0e8f0" />
+            <XAxis dataKey="se" tick={{ fontSize: 10 }} interval={0} angle={-30} textAnchor="end" height={50} />
+            <YAxis tick={{ fontSize: 11 }} />
+            <Tooltip formatter={(val, name) => [val, name === "demanda" ? "Demanda" : "Proyección"]} />
+            <Bar dataKey="demanda" fill="#2980b9" radius={[4,4,0,0]}
+              label={false}
+              isAnimationActive={false}
+            />
+            <Line
+              dataKey="demanda"
+              stroke="#2980b9" strokeWidth={0} dot={false}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+        <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+          {dataGrafico.map((d, i) => d.proyectado && (
+            <div key={i} style={{ background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 6, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "#856404" }}>
+              {d.se.replace(" (proy)", "")}: {d.demanda.toLocaleString()}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Gráfico Respiratorias */}
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "20px 16px", marginBottom: 24 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: P.azulDark, marginBottom: 16 }}>
+          Atenciones Respiratorias
+          <span style={{ fontSize: 11, fontWeight: 400, color: P.muted, marginLeft: 12 }}>— histórico &nbsp;&nbsp; - - - proyectado</span>
+        </div>
+        <ResponsiveContainer width="100%" height={260}>
+          <ComposedChart data={dataGrafico} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e0e8f0" />
+            <XAxis dataKey="se" tick={{ fontSize: 10 }} interval={0} angle={-30} textAnchor="end" height={50} />
+            <YAxis tick={{ fontSize: 11 }} />
+            <Tooltip formatter={(val) => [val, "Respiratorias"]} />
+            <Bar dataKey="resp" fill="#e67e22" radius={[4,4,0,0]} isAnimationActive={false} />
+          </ComposedChart>
+        </ResponsiveContainer>
+        <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+          {dataGrafico.map((d, i) => d.proyectado && (
+            <div key={i} style={{ background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 6, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "#856404" }}>
+              {d.se.replace(" (proy)", "")}: {d.resp.toLocaleString()}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Tabla resumen proyecciones */}
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "20px", marginBottom: 24 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: P.azulDark, marginBottom: 16 }}>Detalle de proyecciones</div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={{ padding: "10px 12px", background: P.azulLight, color: P.azulDark, fontSize: 12, fontWeight: 800, textAlign: "left", borderRadius: "8px 0 0 0" }}>Semana</th>
+              <th style={{ padding: "10px 12px", background: P.azulLight, color: P.azulDark, fontSize: 12, fontWeight: 800, textAlign: "right" }}>Demanda proyectada</th>
+              <th style={{ padding: "10px 12px", background: P.azulLight, color: P.azulDark, fontSize: 12, fontWeight: 800, textAlign: "right", borderRadius: "0 8px 0 0" }}>Respiratorias proyectadas</th>
+            </tr>
+          </thead>
+          <tbody>
+            {proyecciones.map((p, i) => (
+              <tr key={i} style={{ background: i % 2 === 0 ? "#fffbf0" : "#fff" }}>
+                <td style={{ padding: "10px 12px", fontSize: 13, fontWeight: 700, color: "#856404", borderBottom: `1px solid ${P.border}` }}>
+                  {p.se}
+                </td>
+                <td style={{ padding: "10px 12px", fontSize: 13, fontWeight: 700, color: P.azul, textAlign: "right", borderBottom: `1px solid ${P.border}` }}>
+                  {p.demanda.toLocaleString()}
+                </td>
+                <td style={{ padding: "10px 12px", fontSize: 13, fontWeight: 700, color: "#e67e22", textAlign: "right", borderBottom: `1px solid ${P.border}` }}>
+                  {p.resp.toLocaleString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div style={{ fontSize: 11, color: P.muted, marginTop: 10 }}>
+          {metodo === "historico"
+            ? `Método: promedio de las ${historial.length} semanas históricas disponibles`
+            : `Método: regresión lineal sobre las últimas ${Math.min(8, historial.length)} semanas`}
+        </div>
       </div>
     </div>
   );
