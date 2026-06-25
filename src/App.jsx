@@ -56,31 +56,31 @@ const ESTABLECIMIENTOS_GROUPED = [
   {
     comuna: "── Polo Cerrillos Maipú · Cerrillos ──",
     items: [
-      "Voullieme",
-      "SAR Pincheira",
+      "SAPU Dr. Norman Voulliéme",
+      "SAR Enfermera Sofía Pincheira",
     ],
   },
   {
     comuna: "── Polo Cerrillos Maipú · Maipú ──",
     items: [
-      "Maipú",
-      "Juricic",
+      "SAPU Maipú",
+      "SAPU Dra. Ana María Juricic",
       "SAR Michelle Bachelet",
-      "Insunza",
+      "SAPU Dr. Iván Insunza",
     ],
   },
   {
     comuna: "── Polo Santiago Estación Central · Santiago ──",
     items: [
-      "CESFAM N°1",
-      "Domeyko",
+      "SAPU Consultorio Nº1",
+      "SAPU Ignacio Domeyko",
     ],
   },
   {
     comuna: "── Polo Santiago Estación Central · Estación Central ──",
     items: [
-      "Padre Vicente",
-      "Chuchunco",
+      "SAPU Padre Vicente Irarrázabal",
+      "SAPU San José de Chuchunco",
     ],
   },
 ];
@@ -5093,29 +5093,29 @@ export default function App() {
     return Object.values(map).sort((a, b) => a.dia.localeCompare(b.dia));
   }, [filtrados]);
 
+  // Absorción: respeta filtro de Polo y SE, pero IGNORA filtro de Establecimiento
   const dataAbsorcionDemanda = useMemo(() => {
-    const totalRed = filtrados.reduce((sum, r) => sum + Number(r.demanda_total || 0), 0);
+    const base = registros.filter(r =>
+      (filtroPolo === "Todos" || getPolo(r.establecimiento) === filtroPolo) &&
+      (filtroSemana === "Todas" || r.semana_epi === filtroSemana)
+    );
+    const totalRed = base.reduce((sum, r) => sum + Number(r.demanda_total || 0), 0);
     const map = {};
-    filtrados.forEach(r => {
+    base.forEach(r => {
       const establecimiento = r.establecimiento || "Sin establecimiento";
       if (!map[establecimiento]) {
-        map[establecimiento] = {
-          establecimiento,
-          demanda: 0,
-          atendidos: 0,
-        };
+        map[establecimiento] = { establecimiento, demanda: 0, atendidos: 0 };
       }
       map[establecimiento].demanda += Number(r.demanda_total || 0);
       map[establecimiento].atendidos += Number(r.pacientes_atendidos || 0);
     });
-
     return Object.values(map)
       .map(row => ({
         ...row,
         absorcion: totalRed ? Number(((row.demanda / totalRed) * 100).toFixed(1)) : 0,
       }))
       .sort((a, b) => b.absorcion - a.absorcion);
-  }, [filtrados]);
+  }, [registros, filtroPolo, filtroSemana]);
 
   const dataRefuerzo = useMemo(() => [
     { name: "Con refuerzo", atendidos: Number(kpis.promCon) },
@@ -5780,6 +5780,8 @@ export default function App() {
             </div>
             {mostrarComparador && <ComparadorPeriodos
               semanasOpts={semanasOpts}
+              registros={registros}
+              filtroPolo={filtroPolo} filtroEstab={filtroEstab}
               p1desde={cmpP1desde} setP1desde={setCmpP1desde}
               p1hasta={cmpP1hasta} setP1hasta={setCmpP1hasta}
               p2desde={cmpP2desde} setP2desde={setCmpP2desde}
@@ -6239,10 +6241,54 @@ function Fld({ label, name, type="text", value, onChange, disabled, ls, is }) {
 }
 
 // ── Comparador de períodos ────────────────────────────────────────────────────
-function ComparadorPeriodos({ semanasOpts, p1desde, setP1desde, p1hasta, setP1hasta, p2desde, setP2desde, p2hasta, setP2hasta, calcMetricasRango, inpS, P }) {
+function ComparadorPeriodos({ semanasOpts, registros, filtroPolo, filtroEstab, p1desde, setP1desde, p1hasta, setP1hasta, p2desde, setP2desde, p2hasta, setP2hasta, calcMetricasRango, inpS, P }) {
+  const [metrica, setMetrica] = React.useState("demanda");
+  const [tipoGrafico, setTipoGrafico] = React.useState("barras");
+
   const m1 = calcMetricasRango(p1desde, p1hasta);
   const m2 = calcMetricasRango(p2desde, p2hasta);
   const selStyle = { ...inpS, width: 90, padding: "6px 8px", fontSize: 13 };
+
+  const METRICAS = [
+    { k: "demanda",    label: "Demanda Total",            field: "demanda_total",            agg: "sum" },
+    { k: "resp",       label: "Atenciones Respiratorias", field: "atenciones_respiratorias", agg: "sum" },
+    { k: "abandonos",  label: "Abandonos",                field: "abandonos",                agg: "sum" },
+    { k: "espera",     label: "T° Espera Prom. (min)",    field: "tiempo_espera",            agg: "avg" },
+  ];
+
+  // Calcular datos por SE para los gráficos
+  const calcDataGrafico = (desde, hasta, label, color) => {
+    if (!desde || !hasta) return [];
+    const rango = semanasOpts.filter(se => se >= desde && se <= hasta);
+    const met = METRICAS.find(m => m.k === metrica);
+    return rango.map((se, i) => {
+      const regs = registros.filter(r =>
+        r.semana_epi === se &&
+        (filtroPolo === "Todos" || getPolo(r.establecimiento) === filtroPolo) &&
+        (filtroEstab === "Todos" || r.establecimiento === filtroEstab)
+      );
+      let val = 0;
+      if (met.agg === "sum") {
+        val = regs.reduce((a, r) => a + Number(r[met.field] || 0), 0);
+      } else {
+        const valid = regs.filter(r => r[met.field] != null && r[met.field] !== "");
+        val = valid.length ? Math.round(valid.reduce((a, r) => a + Number(r[met.field]), 0) / valid.length) : 0;
+      }
+      return { se: `SE ${String(i+1).padStart(2,"0")}`, seReal: se, [label]: val };
+    });
+  };
+
+  // Merge data for combined chart (align by position)
+  const data1 = calcDataGrafico(p1desde, p1hasta, "P1", "#2980b9");
+  const data2 = calcDataGrafico(p2desde, p2hasta, "P2", "#27ae60");
+  const maxLen = Math.max(data1.length, data2.length);
+  const dataGrafico = Array.from({ length: maxLen }, (_, i) => ({
+    idx: `Sem ${i+1}`,
+    seP1: data1[i]?.seReal || "",
+    seP2: data2[i]?.seReal || "",
+    P1: data1[i]?.P1 ?? null,
+    P2: data2[i]?.P2 ?? null,
+  }));
 
   const diff = (v1, v2, invert=false) => {
     if (v1==null || v2==null || Number(v2)===0) return null;
@@ -6267,8 +6313,12 @@ function ComparadorPeriodos({ semanasOpts, p1desde, setP1desde, p1hasta, setP1ha
     </tr>
   );
 
+  const hayDatos = data1.length > 0 || data2.length > 0;
+  const metActual = METRICAS.find(m => m.k === metrica);
+
   return (
     <div>
+      {/* Selectores de período */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
         {[
           { label: "📘 Período 1", desde: p1desde, setDesde: setP1desde, hasta: p1hasta, setHasta: setP1hasta, color: "#2980b9" },
@@ -6295,8 +6345,75 @@ function ComparadorPeriodos({ semanasOpts, p1desde, setP1desde, p1hasta, setP1ha
         ))}
       </div>
 
-      {(m1 || m2) ? (
+      {hayDatos ? (<>
+        {/* Controles de gráfico */}
+        <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: P.muted }}>Métrica:</div>
+          {METRICAS.map(m => (
+            <button key={m.k} onClick={() => setMetrica(m.k)} style={{
+              padding: "5px 12px", borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: "pointer",
+              background: metrica === m.k ? P.azul : P.azulLight,
+              color: metrica === m.k ? "#fff" : P.azulDark,
+              border: `1px solid ${metrica === m.k ? P.azul : P.border}`,
+            }}>{m.label}</button>
+          ))}
+          <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+            {[{ v: "barras", label: "▤ Barras" }, { v: "lineas", label: "〜 Líneas" }].map(t => (
+              <button key={t.v} onClick={() => setTipoGrafico(t.v)} style={{
+                padding: "5px 12px", borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: "pointer",
+                background: tipoGrafico === t.v ? P.azulDark : P.azulLight,
+                color: tipoGrafico === t.v ? "#fff" : P.azulDark,
+                border: `1px solid ${P.border}`,
+              }}>{t.label}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Gráfico */}
+        <div style={{ background: P.azulLight, borderRadius: 12, padding: "16px 8px", marginBottom: 20 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: P.azulDark, marginBottom: 12, paddingLeft: 8 }}>
+            {metActual?.label} — comparación semana a semana
+          </div>
+          <ResponsiveContainer width="100%" height={280}>
+            {tipoGrafico === "barras" ? (
+              <BarChart data={dataGrafico} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e8f0" />
+                <XAxis dataKey="idx" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip
+                  formatter={(val, name) => [val ?? "—", name === "P1" ? `P1 (${p1desde}→${p1hasta})` : `P2 (${p2desde}→${p2hasta})`]}
+                  labelFormatter={(label, payload) => {
+                    if (!payload?.length) return label;
+                    return `${label} | P1: ${payload[0]?.payload?.seP1 || "—"} · P2: ${payload[0]?.payload?.seP2 || "—"}`;
+                  }}
+                />
+                <Legend formatter={n => n === "P1" ? `📘 P1 (${p1desde}→${p1hasta})` : `📗 P2 (${p2desde}→${p2hasta})`} />
+                <Bar dataKey="P1" fill="#2980b9" radius={[4,4,0,0]} />
+                <Bar dataKey="P2" fill="#27ae60" radius={[4,4,0,0]} />
+              </BarChart>
+            ) : (
+              <LineChart data={dataGrafico} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e8f0" />
+                <XAxis dataKey="idx" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip
+                  formatter={(val, name) => [val ?? "—", name === "P1" ? `P1 (${p1desde}→${p1hasta})` : `P2 (${p2desde}→${p2hasta})`]}
+                  labelFormatter={(label, payload) => {
+                    if (!payload?.length) return label;
+                    return `${label} | P1: ${payload[0]?.payload?.seP1 || "—"} · P2: ${payload[0]?.payload?.seP2 || "—"}`;
+                  }}
+                />
+                <Legend formatter={n => n === "P1" ? `📘 P1 (${p1desde}→${p1hasta})` : `📗 P2 (${p2desde}→${p2hasta})`} />
+                <Line dataKey="P1" stroke="#2980b9" strokeWidth={2.5} dot={{ r: 3 }} connectNulls />
+                <Line dataKey="P2" stroke="#27ae60" strokeWidth={2.5} dot={{ r: 3 }} connectNulls />
+              </LineChart>
+            )}
+          </ResponsiveContainer>
+        </div>
+
+        {/* Tabla resumen */}
         <div style={{ overflowX: "auto" }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, marginBottom: 10 }}>Resumen total de cada período</div>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>
@@ -6322,7 +6439,7 @@ function ComparadorPeriodos({ semanasOpts, p1desde, setP1desde, p1hasta, setP1ha
           </table>
           <div style={{ fontSize: 11, color: P.muted, marginTop: 8 }}>▲▼ variación del Período 1 respecto al Período 2</div>
         </div>
-      ) : (
+      </>) : (
         <div style={{ textAlign: "center", padding: 24, color: P.muted, fontSize: 13 }}>
           Selecciona un rango de SE en cada período para comparar
         </div>
