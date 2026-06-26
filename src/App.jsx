@@ -4958,7 +4958,10 @@ export default function App() {
   const [proyMetodo, setProyMetodo] = useState("historico");
   const [proySemanas, setProyeSemanas] = useState(4);
   const [importResultado, setImportResultado] = useState(null);
-  const [filtroSemana, setFiltroSemana] = useState("Todas");
+  // Iniciar con la SE actual seleccionada
+  const _hoy = new Date();
+  const _hoyStr = `${_hoy.getFullYear()}-${String(_hoy.getMonth()+1).padStart(2,"0")}-${String(_hoy.getDate()).padStart(2,"0")}`;
+  const [filtroSemana, setFiltroSemana] = useState(getEpiWeek(_hoyStr));
   const [cmpP1desde, setCmpP1desde] = useState("");
   const [cmpP1hasta, setCmpP1hasta] = useState("");
   const [cmpP2desde, setCmpP2desde] = useState("");
@@ -5603,8 +5606,8 @@ export default function App() {
                       <Bar dataKey="absorcion" name="Absorción" fill={P.azul} radius={[0, 6, 6, 0]} barSize={18} />
                     </BarChart>
                   </ResponsiveContainer>
-                  <div style={{ border: `1px solid ${P.border}`, borderRadius: 10, overflow: "hidden", alignSelf: "stretch" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                  <div style={{ border: `1px solid ${P.border}`, borderRadius: 10, overflow: "auto", alignSelf: "stretch", WebkitOverflowScrolling: "touch" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 320 }}>
                       <thead>
                         <tr style={{ background: P.azulDark }}>
                           {["Establecimiento", "Demanda", "% Red", "Atendidos"].map(h => (
@@ -5634,6 +5637,69 @@ export default function App() {
               )}
             </div>
 
+            {/* ── Atenciones totales por establecimiento ─────── */}
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Atenciones Totales por Establecimiento</div>
+                <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Suma de pacientes atendidos según filtros aplicados</div>
+              </div>
+              {dataAbsorcionDemanda.length > 0 ? (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 18, alignItems: "stretch" }}>
+                  <ResponsiveContainer width="100%" height={Math.max(260, dataAbsorcionDemanda.length * 34)}>
+                    <BarChart
+                      data={[...dataAbsorcionDemanda].sort((a,b) => b.atendidos - a.atendidos)}
+                      layout="vertical"
+                      margin={{ top: 4, right: 28, left: 16, bottom: 4 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke={P.grisMid} horizontal={false} />
+                      <XAxis type="number" tick={{ fontSize: 11, fill: P.muted }} tickFormatter={v => v.toLocaleString("es-CL")} />
+                      <YAxis type="category" dataKey="establecimiento" width={142} tick={{ fontSize: 11, fill: P.text }} />
+                      <Tooltip
+                        contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 8, fontSize: 12 }}
+                        formatter={(val) => [val.toLocaleString("es-CL"), "Atendidos"]}
+                        labelFormatter={label => `Establecimiento: ${label}`}
+                      />
+                      <Bar dataKey="atendidos" name="Atendidos" fill={P.verde} radius={[0,6,6,0]} barSize={18} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                  <div style={{ border: `1px solid ${P.border}`, borderRadius: 10, overflow: "auto", alignSelf: "stretch", WebkitOverflowScrolling: "touch" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 320 }}>
+                      <thead>
+                        <tr style={{ background: P.azulDark }}>
+                          {["Establecimiento", "Atendidos", "Respiratorias", "% Resp."].map(h => (
+                            <th key={h} style={{ padding: "10px 12px", textAlign: h === "Establecimiento" ? "left" : "right", color: "#fff", fontWeight: 700, whiteSpace: "nowrap" }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[...dataAbsorcionDemanda]
+                          .sort((a,b) => b.atendidos - a.atendidos)
+                          .map((r, i) => {
+                            const regsEstab = filtrados.filter(reg => reg.establecimiento === r.establecimiento);
+                            const totalResp = regsEstab.reduce((s, reg) => s + Number(reg.atenciones_respiratorias || 0), 0);
+                            const pctResp   = r.atendidos > 0 ? ((totalResp / r.atendidos) * 100).toFixed(1) : "—";
+                            return (
+                              <tr key={r.establecimiento} style={{ background: i % 2 === 0 ? "#fff" : P.bg }}>
+                                <td style={{ ...tdS, whiteSpace: "normal", fontWeight: 700 }}>{r.establecimiento}</td>
+                                <td style={{ ...tdS, textAlign: "right", color: P.verde, fontWeight: 800 }}>{r.atendidos.toLocaleString("es-CL")}</td>
+                                <td style={{ ...tdS, textAlign: "right", color: P.amber, fontWeight: 700 }}>{totalResp.toLocaleString("es-CL")}</td>
+                                <td style={{ ...tdS, textAlign: "right" }}>
+                                  <span style={{ background: "#fff8e1", color: P.amber, borderRadius: 20, padding: "3px 9px", fontWeight: 800 }}>{pctResp}%</span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", color: P.muted, fontSize: 13 }}>
+                  Sin datos para mostrar con los filtros aplicados.
+                </div>
+              )}
+            </div>
+
             {/* Gráfico comportamiento diario — ancho completo */}
             <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
@@ -5646,15 +5712,15 @@ export default function App() {
                 <ResponsiveContainer width="100%" height={260}>
                   <LineChart data={dataXDia} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={P.grisMid} />
-                    <XAxis dataKey="dia" tick={{ fontSize: 11, fill: P.muted }} />
-                    <YAxis tick={{ fontSize: 11, fill: P.muted }} />
-                    <Tooltip contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 8, fontSize: 12 }} />
-                    <Legend wrapperStyle={{ fontSize: 11 }} />
-                    <Line type="monotone" dataKey="demanda"       name="Demanda Total"     stroke={P.azul}    strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                    <Line type="monotone" dataKey="atendidos"     name="Atendidos"         stroke={P.verde}   strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                    <Line type="monotone" dataKey="respiratorias" name="Respiratorias"     stroke={P.amber}   strokeWidth={2}   dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                    <Line type="monotone" dataKey="abandonos"     name="Abandonos"         stroke={P.rojo}    strokeWidth={2}   dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                    <Line type="monotone" dataKey="derivaciones"  name="Derivaciones"      stroke="#7B3FA0"   strokeWidth={2}   dot={{ r: 3 }} activeDot={{ r: 5 }} strokeDasharray="5 3" />
+                    <XAxis dataKey="dia" tick={{ fontSize: 10, fill: P.muted }} interval={dataXDia.length > 30 ? Math.floor(dataXDia.length / 8) : 0} angle={dataXDia.length > 20 ? -30 : 0} textAnchor={dataXDia.length > 20 ? "end" : "middle"} height={dataXDia.length > 20 ? 45 : 30} />
+                    <YAxis tick={{ fontSize: 11, fill: P.muted }} width={45} />
+                    <Tooltip contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 8, fontSize: 11 }} />
+                    <Legend wrapperStyle={{ fontSize: 10 }} />
+                    <Line type="monotone" dataKey="demanda"       name="Demanda Total"     stroke={P.azul}    strokeWidth={2} dot={dataXDia.length > 30 ? false : { r: 3 }} activeDot={{ r: 5 }} />
+                    <Line type="monotone" dataKey="atendidos"     name="Atendidos"         stroke={P.verde}   strokeWidth={2} dot={dataXDia.length > 30 ? false : { r: 3 }} activeDot={{ r: 5 }} />
+                    <Line type="monotone" dataKey="respiratorias" name="Respiratorias"     stroke={P.amber}   strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="abandonos"     name="Abandonos"         stroke={P.rojo}    strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="derivaciones"  name="Derivaciones"      stroke="#7B3FA0"   strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} strokeDasharray="5 3" />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
@@ -5674,7 +5740,7 @@ export default function App() {
                 <ResponsiveContainer width="100%" height={260}>
                   <ComposedChart data={dataXDia} margin={{ top: 4, right: 32, left: 0, bottom: 4 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={P.grisMid} />
-                    <XAxis dataKey="dia" tick={{ fontSize: 11, fill: P.muted }} />
+                    <XAxis dataKey="dia" tick={{ fontSize: 10, fill: P.muted }} interval={dataXDia.length > 30 ? Math.floor(dataXDia.length / 8) : 0} angle={dataXDia.length > 20 ? -30 : 0} textAnchor={dataXDia.length > 20 ? "end" : "middle"} height={dataXDia.length > 20 ? 45 : 30} />
                     <YAxis yAxisId="abs" orientation="left" tick={{ fontSize: 11, fill: P.muted }} label={{ value: "Atendidos", angle: -90, position: "insideLeft", fontSize: 10, fill: P.muted }} />
                     <YAxis yAxisId="pct" orientation="right" tickFormatter={v => `${v}%`} domain={[0, 100]} tick={{ fontSize: 11, fill: P.amber }} label={{ value: "%Resp.", angle: 90, position: "insideRight", fontSize: 10, fill: P.amber }} />
                     <Tooltip
@@ -6523,10 +6589,16 @@ function ResumenAmbulancias({ registrosAmbulancias, filtroEstab, filtroPolo, POL
 // ── Proyecciones ──────────────────────────────────────────────────────────────
 function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, semanas, setSemanas, semanasOpts, P, inpS }) {
 
-  // Filtrar registros según polo y establecimiento
+  // Calcular SE actual para excluirla (datos incompletos)
+  const hoy = new Date();
+  const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,"0")}-${String(hoy.getDate()).padStart(2,"0")}`;
+  const seActual = getEpiWeek(hoyStr);
+
+  // Filtrar registros según polo y establecimiento, excluyendo SE actual
   const base = registros.filter(r =>
     (filtroPolo === "Todos" || getPolo(r.establecimiento) === filtroPolo) &&
-    (filtroEstab === "Todos" || r.establecimiento === filtroEstab)
+    (filtroEstab === "Todos" || r.establecimiento === filtroEstab) &&
+    r.semana_epi !== seActual
   );
 
   // Agrupar por SE → { demanda, resp }
@@ -6630,6 +6702,11 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
         <div style={{ marginLeft: "auto", background: P.azulLight, borderRadius: 8, padding: "10px 16px", fontSize: 12, color: P.azulDark }}>
           <b>{historial.length}</b> semanas históricas · <b>{proyecciones.length}</b> proyectadas
         </div>
+      </div>
+
+      {/* Nota semana excluida */}
+      <div style={{ background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 8, padding: "10px 16px", marginBottom: 16, fontSize: 12, color: "#856404" }}>
+        ⚠️ La semana en curso (<b>{seActual}</b>) fue excluida automáticamente por tener datos incompletos.
       </div>
 
       {/* Gráfico Demanda */}
