@@ -5013,6 +5013,15 @@ export default function App() {
   const estabs  = useMemo(() => ["Todos", ...new Set(registros.map(r => r.establecimiento))], [registros]);
   const POLOS   = ["Todos", "Polo Cerrillos Maipú", "Polo Santiago Estación Central"];
 
+  // Centros con ingreso de datos pendiente para la semana epidemiológica actual
+  const seActualDashboard = useMemo(() => getEpiWeek(_hoyStr), [_hoyStr]);
+  const centrosPendientes = useMemo(() => {
+    const conDatos = new Set(
+      registros.filter(r => r.semana_epi === seActualDashboard).map(r => r.establecimiento)
+    );
+    return ESTABLECIMIENTOS.filter(e => !conDatos.has(e));
+  }, [registros, seActualDashboard]);
+
   const filtrados = useMemo(() => registros.filter(r =>
     (filtroSemana === "Todas" || r.semana_epi === filtroSemana) &&
     (filtroPolo === "Todos" || POLO_MAP[r.establecimiento] === filtroPolo) &&
@@ -5530,6 +5539,42 @@ export default function App() {
         {/* ── DASHBOARD ─────────────────────────────────────── */}
         {tab === "dashboard" && (
           <div>
+            {/* Centros con ingreso de datos pendiente — semana epidemiológica actual */}
+            <div style={{
+              background: centrosPendientes.length ? "#FFF8E1" : P.verdeLight,
+              border: `1px solid ${centrosPendientes.length ? "#ffc107" : P.verde}`,
+              borderRadius: 12, padding: "16px 20px", marginBottom: 18,
+              display: "flex", gap: 16, alignItems: "flex-start", flexWrap: "wrap"
+            }}>
+              <div style={{ fontSize: 26, lineHeight: 1 }}>{centrosPendientes.length ? "⏳" : "✅"}</div>
+              <div style={{ flex: 1, minWidth: 240 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: centrosPendientes.length ? "#856404" : P.verde }}>
+                  Ingreso de Datos Pendiente — {seActualDashboard}
+                </div>
+                {centrosPendientes.length ? (
+                  <>
+                    <div style={{ fontSize: 12, color: "#856404", marginTop: 4, marginBottom: 10 }}>
+                      <b>{centrosPendientes.length}</b> de <b>{ESTABLECIMIENTOS.length}</b> establecimientos aún no registran datos para la semana epidemiológica en curso.
+                    </div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {centrosPendientes.map(e => (
+                        <span key={e} style={{
+                          background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 6,
+                          padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "#856404"
+                        }}>
+                          {e}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ fontSize: 12, color: P.verde, marginTop: 4 }}>
+                    Todos los establecimientos han registrado datos para la semana epidemiológica en curso.
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Filtros */}
             <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 10, padding: "14px 18px", marginBottom: 22, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
               <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, alignSelf: "center", marginRight: 4 }}>🔍 Filtros</div>
@@ -6005,6 +6050,9 @@ export default function App() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
               <div style={{ fontSize: 16, fontWeight: 800, color: P.azulDark }}>Registros ({filtrados.length})</div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <select value={filtroPolo} onChange={e => setFiltroPolo(e.target.value)} style={{ ...inpS, width: "auto" }}>
+                  {POLOS.map(p => <option key={p}>{p}</option>)}
+                </select>
                 <select value={filtroSemana} onChange={e => setFiltroSemana(e.target.value)} style={{ ...inpS, width: "auto" }}>
                   {semanas.map(s => <option key={s}>{s}</option>)}
                 </select>
