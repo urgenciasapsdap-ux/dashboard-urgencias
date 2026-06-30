@@ -6589,16 +6589,21 @@ function ResumenAmbulancias({ registrosAmbulancias, filtroEstab, filtroPolo, POL
 // ── Proyecciones ──────────────────────────────────────────────────────────────
 function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, semanas, setSemanas, semanasOpts, P, inpS }) {
 
-  // Calcular SE actual para excluirla (datos incompletos)
+  // Calcular SE actual y anterior para excluirlas (datos incompletos)
   const hoy = new Date();
   const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,"0")}-${String(hoy.getDate()).padStart(2,"0")}`;
   const seActual = getEpiWeek(hoyStr);
+  const haceUnaSemana = new Date(hoy);
+  haceUnaSemana.setDate(haceUnaSemana.getDate() - 7);
+  const haceUnaSemanaStr = `${haceUnaSemana.getFullYear()}-${String(haceUnaSemana.getMonth()+1).padStart(2,"0")}-${String(haceUnaSemana.getDate()).padStart(2,"0")}`;
+  const seAnterior = getEpiWeek(haceUnaSemanaStr);
 
-  // Filtrar registros según polo y establecimiento, excluyendo SE actual
+  // Filtrar registros según polo y establecimiento, excluyendo SE actual y anterior
   const base = registros.filter(r =>
     (filtroPolo === "Todos" || getPolo(r.establecimiento) === filtroPolo) &&
     (filtroEstab === "Todos" || r.establecimiento === filtroEstab) &&
-    r.semana_epi !== seActual
+    r.semana_epi !== seActual &&
+    r.semana_epi !== seAnterior
   );
 
   // Agrupar por SE → { demanda, resp }
@@ -6706,7 +6711,7 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
 
       {/* Nota semana excluida */}
       <div style={{ background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 8, padding: "10px 16px", marginBottom: 16, fontSize: 12, color: "#856404" }}>
-        ⚠️ La semana en curso (<b>{seActual}</b>) fue excluida automáticamente por tener datos incompletos.
+        ⚠️ La semana en curso (<b>{seActual}</b>) y la anterior (<b>{seAnterior}</b>) fueron excluidas automáticamente por tener datos incompletos o aún en carga.
       </div>
 
       {/* Gráfico Demanda */}
