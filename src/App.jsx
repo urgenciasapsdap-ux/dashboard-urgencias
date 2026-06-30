@@ -5027,10 +5027,19 @@ export default function App() {
   }, [_hoyStr]);
   const pendientesPorSE = useMemo(() => {
     return ultimasSEDashboard.map(se => {
-      const conDatos = new Set(
-        registros.filter(r => r.semana_epi === se).map(r => r.establecimiento)
-      );
-      return { se, pendientes: ESTABLECIMIENTOS.filter(e => !conDatos.has(e)) };
+      // Fechas en que ALGÚN establecimiento ya registró datos para esta SE
+      const fechasConDatos = [...new Set(
+        registros.filter(r => r.semana_epi === se && r.fecha).map(r => r.fecha)
+      )].sort();
+
+      const pendientes = ESTABLECIMIENTOS.filter(e => {
+        // ¿Le falta algún día en que otros centros ya reportaron en esta SE?
+        return fechasConDatos.some(fecha =>
+          !registros.some(r => r.establecimiento === e && r.semana_epi === se && r.fecha === fecha)
+        );
+      });
+
+      return { se, pendientes };
     });
   }, [registros, ultimasSEDashboard]);
   const totalPendientesDashboard = useMemo(
@@ -5569,8 +5578,8 @@ export default function App() {
                   </div>
                   <div style={{ fontSize: 12, color: totalPendientesDashboard ? "#856404" : P.verde, marginTop: 4 }}>
                     {totalPendientesDashboard
-                      ? `${totalPendientesDashboard} registro(s) pendientes entre ${ultimasSEDashboard[2]} y ${ultimasSEDashboard[0]}.`
-                      : `Todos los establecimientos están al día entre ${ultimasSEDashboard[2]} y ${ultimasSEDashboard[0]}.`}
+                      ? `Hay establecimientos con registros pendientes en las últimas 3 semanas epidemiológicas.`
+                      : `Todos los establecimientos están al día en las últimas 3 semanas epidemiológicas.`}
                   </div>
                 </div>
               </div>
@@ -5582,16 +5591,13 @@ export default function App() {
                       background: pendientes.length ? "#fff" : "transparent",
                       border: pendientes.length ? `1px solid ${P.border}` : "none",
                       borderRadius: 8, padding: pendientes.length ? "10px 12px" : 0,
-                      display: "flex", gap: 10, alignItems: "flex-start", flexWrap: "wrap"
                     }}>
-                      <span style={{
-                        background: pendientes.length ? P.azul : P.verdeLight,
-                        color: pendientes.length ? "#fff" : P.verde,
-                        borderRadius: 20, padding: "3px 11px", fontSize: 11, fontWeight: 800, whiteSpace: "nowrap"
-                      }}>
-                        {se}{se === seActualDashboard ? " (actual)" : ""}
-                      </span>
-                      {pendientes.length ? (
+                      <div style={{ fontSize: 12, fontWeight: 700, color: pendientes.length ? "#856404" : P.verde, marginBottom: pendientes.length ? 8 : 0 }}>
+                        {pendientes.length
+                          ? <>La <b>{se}</b>{se === seActualDashboard ? " (actual)" : ""} tiene registros pendientes:</>
+                          : <>La <b>{se}</b>{se === seActualDashboard ? " (actual)" : ""} está completa ✅</>}
+                      </div>
+                      {pendientes.length > 0 && (
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                           {pendientes.map(e => (
                             <span key={e} style={{
@@ -5602,8 +5608,6 @@ export default function App() {
                             </span>
                           ))}
                         </div>
-                      ) : (
-                        <span style={{ fontSize: 12, color: P.verde, alignSelf: "center" }}>✅ Completo</span>
                       )}
                     </div>
                   ))}
