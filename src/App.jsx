@@ -5013,14 +5013,30 @@ export default function App() {
   const estabs  = useMemo(() => ["Todos", ...new Set(registros.map(r => r.establecimiento))], [registros]);
   const POLOS   = ["Todos", "Polo Cerrillos Maipú", "Polo Santiago Estación Central"];
 
-  // Centros con ingreso de datos pendiente para la semana epidemiológica actual
+  // Centros con ingreso de datos pendiente — últimas 3 semanas epidemiológicas
   const seActualDashboard = useMemo(() => getEpiWeek(_hoyStr), [_hoyStr]);
-  const centrosPendientes = useMemo(() => {
-    const conDatos = new Set(
-      registros.filter(r => r.semana_epi === seActualDashboard).map(r => r.establecimiento)
-    );
-    return ESTABLECIMIENTOS.filter(e => !conDatos.has(e));
-  }, [registros, seActualDashboard]);
+  const ultimasSEDashboard = useMemo(() => {
+    const out = [];
+    for (let i = 0; i < 3; i++) {
+      const d = new Date(_hoy);
+      d.setDate(d.getDate() - i * 7);
+      const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+      out.push(getEpiWeek(ds));
+    }
+    return out; // [actual, -1, -2]
+  }, [_hoyStr]);
+  const pendientesPorSE = useMemo(() => {
+    return ultimasSEDashboard.map(se => {
+      const conDatos = new Set(
+        registros.filter(r => r.semana_epi === se).map(r => r.establecimiento)
+      );
+      return { se, pendientes: ESTABLECIMIENTOS.filter(e => !conDatos.has(e)) };
+    });
+  }, [registros, ultimasSEDashboard]);
+  const totalPendientesDashboard = useMemo(
+    () => pendientesPorSE.reduce((a, s) => a + s.pendientes.length, 0),
+    [pendientesPorSE]
+  );
 
   const filtrados = useMemo(() => registros.filter(r =>
     (filtroSemana === "Todas" || r.semana_epi === filtroSemana) &&
@@ -5539,40 +5555,60 @@ export default function App() {
         {/* ── DASHBOARD ─────────────────────────────────────── */}
         {tab === "dashboard" && (
           <div>
-            {/* Centros con ingreso de datos pendiente — semana epidemiológica actual */}
+            {/* Centros con ingreso de datos pendiente — últimas 3 semanas epidemiológicas */}
             <div style={{
-              background: centrosPendientes.length ? "#FFF8E1" : P.verdeLight,
-              border: `1px solid ${centrosPendientes.length ? "#ffc107" : P.verde}`,
+              background: totalPendientesDashboard ? "#FFF8E1" : P.verdeLight,
+              border: `1px solid ${totalPendientesDashboard ? "#ffc107" : P.verde}`,
               borderRadius: 12, padding: "16px 20px", marginBottom: 18,
-              display: "flex", gap: 16, alignItems: "flex-start", flexWrap: "wrap"
             }}>
-              <div style={{ fontSize: 26, lineHeight: 1 }}>{centrosPendientes.length ? "⏳" : "✅"}</div>
-              <div style={{ flex: 1, minWidth: 240 }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: centrosPendientes.length ? "#856404" : P.verde }}>
-                  Ingreso de Datos Pendiente — {seActualDashboard}
-                </div>
-                {centrosPendientes.length ? (
-                  <>
-                    <div style={{ fontSize: 12, color: "#856404", marginTop: 4, marginBottom: 10 }}>
-                      <b>{centrosPendientes.length}</b> de <b>{ESTABLECIMIENTOS.length}</b> establecimientos aún no registran datos para la semana epidemiológica en curso.
-                    </div>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      {centrosPendientes.map(e => (
-                        <span key={e} style={{
-                          background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 6,
-                          padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "#856404"
-                        }}>
-                          {e}
-                        </span>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <div style={{ fontSize: 12, color: P.verde, marginTop: 4 }}>
-                    Todos los establecimientos han registrado datos para la semana epidemiológica en curso.
+              <div style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: totalPendientesDashboard ? 14 : 0 }}>
+                <div style={{ fontSize: 26, lineHeight: 1 }}>{totalPendientesDashboard ? "⏳" : "✅"}</div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: totalPendientesDashboard ? "#856404" : P.verde }}>
+                    Ingreso de Datos Pendiente — Últimas 3 Semanas Epidemiológicas
                   </div>
-                )}
+                  <div style={{ fontSize: 12, color: totalPendientesDashboard ? "#856404" : P.verde, marginTop: 4 }}>
+                    {totalPendientesDashboard
+                      ? `${totalPendientesDashboard} registro(s) pendientes entre ${ultimasSEDashboard[2]} y ${ultimasSEDashboard[0]}.`
+                      : `Todos los establecimientos están al día entre ${ultimasSEDashboard[2]} y ${ultimasSEDashboard[0]}.`}
+                  </div>
+                </div>
               </div>
+
+              {totalPendientesDashboard > 0 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {pendientesPorSE.map(({ se, pendientes }) => (
+                    <div key={se} style={{
+                      background: pendientes.length ? "#fff" : "transparent",
+                      border: pendientes.length ? `1px solid ${P.border}` : "none",
+                      borderRadius: 8, padding: pendientes.length ? "10px 12px" : 0,
+                      display: "flex", gap: 10, alignItems: "flex-start", flexWrap: "wrap"
+                    }}>
+                      <span style={{
+                        background: pendientes.length ? P.azul : P.verdeLight,
+                        color: pendientes.length ? "#fff" : P.verde,
+                        borderRadius: 20, padding: "3px 11px", fontSize: 11, fontWeight: 800, whiteSpace: "nowrap"
+                      }}>
+                        {se}{se === seActualDashboard ? " (actual)" : ""}
+                      </span>
+                      {pendientes.length ? (
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          {pendientes.map(e => (
+                            <span key={e} style={{
+                              background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 6,
+                              padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "#856404"
+                            }}>
+                              {e}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: 12, color: P.verde, alignSelf: "center" }}>✅ Completo</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Filtros */}
