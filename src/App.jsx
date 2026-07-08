@@ -5785,6 +5785,130 @@ export default function App() {
               )}
             </div>
 
+            {/* ── Tiempos de Espera ─────────────────────────── */}
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>⏱️ Tiempos de Espera</div>
+                <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Promedio por establecimiento y evolución diaria según filtros aplicados</div>
+              </div>
+
+              {(() => {
+                // Promedio por establecimiento
+                const porEstabEspera = {};
+                filtrados.forEach(r => {
+                  if (r.tiempo_espera == null || r.tiempo_espera === "") return;
+                  const e = r.establecimiento;
+                  if (!porEstabEspera[e]) porEstabEspera[e] = { total: 0, n: 0 };
+                  porEstabEspera[e].total += Number(r.tiempo_espera);
+                  porEstabEspera[e].n++;
+                });
+                const dataEstab = Object.entries(porEstabEspera)
+                  .map(([e, d]) => ({ establecimiento: e, promedio: Math.round(d.total / d.n) }))
+                  .sort((a, b) => b.promedio - a.promedio);
+
+                // Evolución diaria
+                const porDiaEspera = {};
+                filtrados.forEach(r => {
+                  if (!r.fecha || r.tiempo_espera == null || r.tiempo_espera === "") return;
+                  const dia = r.fecha.slice(0, 10);
+                  if (!porDiaEspera[dia]) porDiaEspera[dia] = { total: 0, n: 0 };
+                  porDiaEspera[dia].total += Number(r.tiempo_espera);
+                  porDiaEspera[dia].n++;
+                });
+                const dataDia = Object.entries(porDiaEspera)
+                  .sort(([a], [b]) => a.localeCompare(b))
+                  .map(([dia, d]) => ({ dia, promedio: Math.round(d.total / d.n) }));
+
+                const promedioGeneral = dataEstab.length
+                  ? Math.round(dataEstab.reduce((a, d) => a + d.promedio, 0) / dataEstab.length)
+                  : 0;
+                const maximo = dataEstab.length ? Math.max(...dataEstab.map(d => d.promedio)) : 0;
+                const minimo = dataEstab.length ? Math.min(...dataEstab.map(d => d.promedio)) : 0;
+
+                if (dataEstab.length === 0) return (
+                  <div style={{ height: 80, display: "flex", alignItems: "center", justifyContent: "center", color: P.muted, fontSize: 13 }}>
+                    Sin datos de tiempo de espera con los filtros aplicados.
+                  </div>
+                );
+
+                return (
+                  <div>
+                    {/* KPIs espera */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
+                      {[
+                        { label: "Promedio General", val: promedioGeneral, color: promedioGeneral > 180 ? "#e74c3c" : P.azul },
+                        { label: "Mayor Espera",     val: maximo,          color: maximo > 180 ? "#e74c3c" : P.verde },
+                        { label: "Menor Espera",     val: minimo,          color: minimo > 180 ? "#e74c3c" : P.verde },
+                      ].map(({ label, val, color }) => (
+                        <div key={label} style={{
+                          background: val > 180 ? "#fdecea" : P.azulLight,
+                          borderRadius: 10, padding: "12px 16px",
+                          borderLeft: `4px solid ${color}`,
+                          border: val > 180 ? `1.5px solid #e74c3c` : undefined,
+                        }}>
+                          <div style={{ fontSize: 11, color: P.muted, fontWeight: 600 }}>{label}</div>
+                          <div style={{ fontSize: 20, fontWeight: 800, color }}>{val} min</div>
+                          {val > 180 && <div style={{ fontSize: 10, fontWeight: 700, color: "#e74c3c", marginTop: 2 }}>⚠️ Sobre límite (180 min)</div>}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Gráficos lado a lado */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 18 }}>
+
+                      {/* Por establecimiento */}
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, marginBottom: 10 }}>Por establecimiento (min promedio)</div>
+                        <ResponsiveContainer width="100%" height={Math.max(200, dataEstab.length * 36)}>
+                          <BarChart data={dataEstab} layout="vertical" margin={{ top: 4, right: 40, left: 16, bottom: 4 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke={P.grisMid} horizontal={false} />
+                            <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={v => `${v} min`} />
+                            <YAxis type="category" dataKey="establecimiento" width={145} tick={{ fontSize: 10 }} />
+                            <Tooltip formatter={v => [`${v} min`, "T° Espera Prom."]} />
+                            <ReferenceLine x={180} stroke="#e74c3c" strokeDasharray="4 2"
+                              label={{ value: "⚠️ 180 min", position: "top", fontSize: 10, fill: "#e74c3c" }} />
+                            <Bar dataKey="promedio" radius={[0,6,6,0]} barSize={18}>
+                              {dataEstab.map((d, i) => (
+                                <Cell key={i} fill={d.promedio > 180 ? "#e74c3c" : d.promedio === minimo ? P.verde : P.azul} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      {/* Evolución diaria */}
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, marginBottom: 10 }}>Evolución diaria (min promedio red)</div>
+                        <ResponsiveContainer width="100%" height={Math.max(200, dataEstab.length * 36)}>
+                          <ComposedChart data={dataDia} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke={P.grisMid} />
+                            <XAxis dataKey="dia" tick={{ fontSize: 10 }}
+                              interval={dataDia.length > 20 ? Math.floor(dataDia.length / 6) : 0}
+                              angle={dataDia.length > 15 ? -30 : 0}
+                              textAnchor={dataDia.length > 15 ? "end" : "middle"}
+                              height={dataDia.length > 15 ? 45 : 25}
+                            />
+                            <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v}m`} />
+                            <Tooltip formatter={v => [`${v} min`, "T° Espera Prom."]} />
+                            <ReferenceLine y={180} stroke="#e74c3c" strokeDasharray="4 2"
+                              label={{ value: "⚠️ 180 min", position: "right", fontSize: 10, fill: "#e74c3c" }} />
+                            <ReferenceLine y={promedioGeneral} stroke={P.azul} strokeDasharray="4 2"
+                              label={{ value: `Prom: ${promedioGeneral}m`, position: "insideTopRight", fontSize: 10, fill: P.azul }} />
+                            <Bar dataKey="promedio" radius={[3,3,0,0]} barSize={dataDia.length > 30 ? 4 : 8}>
+                              {dataDia.map((d, i) => (
+                                <Cell key={i} fill={d.promedio > 180 ? "#e74c3c80" : `${P.amber}80`} />
+                              ))}
+                            </Bar>
+                            <Line type="monotone" dataKey="promedio" stroke={P.amber} strokeWidth={2} dot={false} />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
             {/* Gráfico comportamiento diario — ancho completo */}
             <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
