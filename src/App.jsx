@@ -6907,15 +6907,30 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
 }
 
 // ── Tab Tiempos de Espera ─────────────────────────────────────────────────────
-function TabTiemposEspera({ registros, filtroPolo, filtroEstab, filtroSemana, P, inpS }) {
-  const [vistaEstab, setVistaEstab] = React.useState("promedio"); // promedio | rango
+function TabTiemposEspera({ registros, P, inpS }) {
+  const [vistaEstab, setVistaEstab] = React.useState("promedio");
+  const [tPolo,    setTPolo]    = React.useState("Todos");
+  const [tEstab,   setTEstab]   = React.useState("Todos");
+  const [tSEDesde, setTSEDesde] = React.useState("");
+  const [tSEHasta, setTSEHasta] = React.useState("");
 
-  // Aplicar filtros
+  // Opciones disponibles
+  const semanasDisp = React.useMemo(() =>
+    [...new Set(registros.map(r => r.semana_epi).filter(Boolean))].sort()
+  , [registros]);
+  const establDisp = React.useMemo(() =>
+    [...new Set(registros.map(r => r.establecimiento).filter(Boolean))].sort()
+  , [registros]);
+
+  const selStyle = { ...inpS, fontSize: 12, padding: "6px 10px" };
+
+  // Aplicar filtros propios
   const base = registros.filter(r =>
     r.tiempo_espera != null && r.tiempo_espera !== "" &&
-    (filtroPolo === "Todos" || getPolo(r.establecimiento) === filtroPolo) &&
-    (filtroEstab === "Todos" || r.establecimiento === filtroEstab) &&
-    (filtroSemana === "Todas" || r.semana_epi === filtroSemana)
+    (tPolo  === "Todos" || getPolo(r.establecimiento) === tPolo) &&
+    (tEstab === "Todos" || r.establecimiento === tEstab) &&
+    (!tSEDesde || (r.semana_epi >= tSEDesde)) &&
+    (!tSEHasta || (r.semana_epi <= tSEHasta))
   );
 
   if (base.length === 0) return (
@@ -7000,7 +7015,56 @@ function TabTiemposEspera({ registros, filtroPolo, filtroEstab, filtroSemana, P,
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto" }}>
       <div style={{ fontSize: 20, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>⏱️ Tiempos de Espera</div>
-      <div style={{ fontSize: 13, color: P.muted, marginBottom: 20 }}>Análisis por establecimiento, semana epidemiológica y día</div>
+      <div style={{ fontSize: 13, color: P.muted, marginBottom: 16 }}>Análisis por establecimiento, semana epidemiológica y día</div>
+
+      {/* Filtros propios */}
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, alignSelf: "center" }}>🔍 Filtros</div>
+
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: P.muted, marginBottom: 4, textTransform: "uppercase" }}>Polo</div>
+          <select value={tPolo} onChange={e => { setTPolo(e.target.value); setTEstab("Todos"); }} style={selStyle}>
+            <option value="Todos">Todos</option>
+            {["Polo Cerrillos Maipú","Polo Santiago Estación Central"].map(p => <option key={p}>{p}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: P.muted, marginBottom: 4, textTransform: "uppercase" }}>Establecimiento</div>
+          <select value={tEstab} onChange={e => setTEstab(e.target.value)} style={selStyle}>
+            <option value="Todos">Todos</option>
+            {establDisp
+              .filter(e => tPolo === "Todos" || getPolo(e) === tPolo)
+              .map(e => <option key={e}>{e}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: P.muted, marginBottom: 4, textTransform: "uppercase" }}>SE Desde</div>
+          <select value={tSEDesde} onChange={e => setTSEDesde(e.target.value)} style={{ ...selStyle, width: 90 }}>
+            <option value="">Todas</option>
+            {semanasDisp.map(se => <option key={se}>{se}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: P.muted, marginBottom: 4, textTransform: "uppercase" }}>SE Hasta</div>
+          <select value={tSEHasta} onChange={e => setTSEHasta(e.target.value)} style={{ ...selStyle, width: 90 }}>
+            <option value="">Todas</option>
+            {semanasDisp.map(se => <option key={se}>{se}</option>)}
+          </select>
+        </div>
+
+        <button onClick={() => { setTPolo("Todos"); setTEstab("Todos"); setTSEDesde(""); setTSEHasta(""); }}
+          style={{ padding: "6px 14px", borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: "pointer",
+            background: P.azulLight, color: P.azulDark, border: `1px solid ${P.border}` }}>
+          ✕ Limpiar
+        </button>
+
+        <div style={{ marginLeft: "auto", fontSize: 12, color: P.muted, alignSelf: "center" }}>
+          <b style={{ color: P.azulDark }}>{base.length}</b> registros con T° espera
+        </div>
+      </div>
 
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12, marginBottom: 24 }}>
