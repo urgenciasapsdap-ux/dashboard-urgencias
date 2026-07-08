@@ -3,7 +3,7 @@ import * as XLSX from "xlsx";
 import { createClient } from "@supabase/supabase-js";
 import {
   BarChart, Bar, LineChart, Line, ComposedChart, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell
+  Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, ReferenceLine
 } from "recharts";
 
 // ── Supabase config ──────────────────────────────────────────────────────────
