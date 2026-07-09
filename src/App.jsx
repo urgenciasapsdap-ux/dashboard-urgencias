@@ -112,22 +112,22 @@ const AMBULANCIA_FILAS = 5;
 
 // Paleta SSMC / Minsal – fondo claro
 const P = {
-  azul:       "#005293",  // azul institucional SSMC
-  azulDark:   "#003366",
-  azulLight:  "#E8F1FA",
-  azulMid:    "#CCE0F5",
-  verde:      "#00833E",  // verde Minsal
-  verdeLight: "#E6F4ED",
-  amber:      "#D97706",
-  rojo:       "#C0392B",
+  azul:       "#1A3A6B",  // azul SSMC institucional
+  azulDark:   "#0F2347",
+  azulLight:  "#EEF2F8",
+  azulMid:    "#C2D0E4",
+  verde:      "#1A7A4A",
+  verdeLight: "#E8F5EE",
+  amber:      "#B45309",
+  rojo:       "#C0392B",  // rojo SSMC institucional
   rojoLight:  "#FDECEA",
-  gris:       "#64748B",
-  grisMid:    "#CBD5E1",
-  bg:         "#F0F4F8",
+  gris:       "#6B7280",
+  grisMid:    "#E5E7EB",
+  bg:         "#F4F6FA",
   card:       "#FFFFFF",
-  border:     "#D1DCE8",
-  text:       "#1E2D3E",
-  muted:      "#5A7184",
+  border:     "#E2E8F0",
+  text:       "#1A2332",
+  muted:      "#6B7280",
 };
 
 const DEMO_DATA = [
@@ -5490,7 +5490,7 @@ export default function App() {
   const tdS = { padding: "10px 12px", whiteSpace: "nowrap", color: P.text, borderBottom: `1px solid ${P.border}` };
 
   return (
-    <div style={{ background: P.bg, minHeight: "100vh", fontFamily: "'Segoe UI', 'Helvetica Neue', Arial, sans-serif", color: P.text }}>
+    <div style={{ background: P.bg, minHeight: "100vh", fontFamily: "'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif", color: P.text }}>
 
       {loading && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(255,255,255,0.92)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
@@ -5509,52 +5509,63 @@ export default function App() {
         }}>{toast.msg}</div>
       )}
 
-      {/* Header SSMC */}
-      <div style={{ background: P.azulDark, padding: "0", borderBottom: `3px solid ${P.verde}` }}>
-        {/* Banda superior */}
-        <div style={{ background: P.azul, padding: "12px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            {/* Logo placeholder SSMC */}
+      {/* Header SSMC — institucional minimalista */}
+      <div style={{ background: P.azul, borderBottom: `3px solid ${P.rojo}` }}>
+        {/* Banda principal */}
+        <div style={{ padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            {/* Logo SSMC */}
             <div style={{
-              width: 44, height: 44, borderRadius: 8,
-              background: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 22, flexShrink: 0
-            }}>🏥</div>
+              width: 46, height: 46, borderRadius: 6, background: "#fff",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0, padding: 3, overflow: "hidden"
+            }}>
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Escudo_de_Chile.svg/240px-Escudo_de_Chile.svg.png"
+                alt="Escudo Chile"
+                style={{ width: 36, height: 36, objectFit: "contain" }}
+                onError={e => { e.target.style.display="none"; e.target.parentNode.innerHTML="<span style='font-size:22px'>🏥</span>"; }}
+              />
+            </div>
             <div>
-              <div style={{ color: "#fff", fontWeight: 800, fontSize: 17, letterSpacing: "-0.3px", lineHeight: 1.2 }}>
-                Atenciones de Urgencia APS SSMC
+              <div style={{ color: "#fff", fontWeight: 700, fontSize: 15, letterSpacing: "-0.2px", lineHeight: 1.3 }}>
+                Urgencias APS · SSMC
               </div>
-              <div style={{ color: "#A8CAEC", fontSize: 11, marginTop: 2 }}>
-                Servicio de Salud Metropolitano Central · Dirección de Atención Primaria
+              <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, marginTop: 1 }}>
+                Servicio de Salud Metropolitano Central · Ministerio de Salud
               </div>
             </div>
           </div>
           <button onClick={exportExcel} style={{
-            background: P.verde, color: "#fff", border: "none", borderRadius: 7,
-            padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 700,
-            display: "flex", alignItems: "center", gap: 6, flexShrink: 0
+            background: "transparent", color: "#fff",
+            border: "1.5px solid rgba(255,255,255,0.35)",
+            borderRadius: 6, padding: "6px 14px", cursor: "pointer",
+            fontSize: 12, fontWeight: 600,
+            display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
           }}>
-            ⬇ Exportar Excel
+            ↓ Exportar Excel
           </button>
         </div>
 
         {/* Nav Tabs */}
-        <div style={{ display: "flex", paddingLeft: 24, paddingTop: 4 }}>
+        <div style={{ display: "flex", paddingLeft: 16, overflowX: "auto" }}>
           {[
-            { id: "dashboard", label: "📊 Resumen" },
-            { id: "formulario", label: "➕ Ingresar Registro" },
-            { id: "tabla", label: "📋 Tabla de Datos" },
-            { id: "ambulancias", label: "🚑 Retenciones Ambulancias" },
-            { id: "importar", label: "📥 Importar Excel" },
-            { id: "tiempos", label: "⏱️ Tiempos de Espera" },
-            { id: "proyecciones", label: "📈 Proyecciones" },
+            { id: "dashboard",    label: "Resumen" },
+            { id: "formulario",   label: "Ingresar" },
+            { id: "tabla",        label: "Tabla" },
+            { id: "ambulancias",  label: "Ambulancias" },
+            { id: "importar",     label: "Importar" },
+            { id: "tiempos",      label: "T° Espera" },
+            { id: "proyecciones", label: "Proyecciones" },
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
-              background: tab === t.id ? P.bg : "transparent",
-              color: tab === t.id ? P.azul : "#A8CAEC",
-              border: "none", borderRadius: "8px 8px 0 0",
-              padding: "9px 20px", cursor: "pointer", fontSize: 13, fontWeight: 700,
-              transition: "all 0.15s", marginRight: 2,
+              background: "transparent",
+              color: tab === t.id ? "#fff" : "rgba(255,255,255,0.5)",
+              border: "none",
+              borderBottom: tab === t.id ? `3px solid ${P.rojo}` : "3px solid transparent",
+              padding: "9px 16px", cursor: "pointer", fontSize: 12,
+              fontWeight: tab === t.id ? 700 : 400,
+              transition: "all 0.15s", whiteSpace: "nowrap",
             }}>{t.label}</button>
           ))}
         </div>
@@ -5659,7 +5670,7 @@ export default function App() {
             </div>
 
             {/* Absorción de demanda por establecimiento */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 14 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 14, flexWrap: "wrap" }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Absorción de la Demanda por Establecimiento</div>
@@ -5724,7 +5735,7 @@ export default function App() {
             </div>
 
             {/* ── Atenciones totales por establecimiento ─────── */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 14 }}>
               <div style={{ marginBottom: 14 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Atenciones Totales por Establecimiento</div>
                 <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Suma de pacientes atendidos según filtros aplicados</div>
@@ -5787,7 +5798,7 @@ export default function App() {
             </div>
 
                         {/* Gráfico comportamiento diario — ancho completo */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 14 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Comportamiento Diario de Variables</div>
@@ -5817,7 +5828,7 @@ export default function App() {
             </div>
 
             {/* Gráfico: Atenciones diarias vs % Respiratorio */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 14 }}>
               <div style={{ marginBottom: 14 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Atenciones Diarias vs % Respiratorio</div>
                 <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Barras: total atendidos por día · Línea: porcentaje de atenciones respiratorias</div>
@@ -5855,7 +5866,7 @@ export default function App() {
             </div>
 
             {/* Gráfico: Atendidos vs Respiratorias por semana + acumulado */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 14 }}>
               <div style={{ marginBottom: 14 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Atenciones Totales v/s Respiratorias por Semana · Acumulado</div>
                 <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Barras: valores semanales · Líneas: acumulado progresivo</div>
@@ -5884,7 +5895,7 @@ export default function App() {
 
             {/* Gráficos fila 2 */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 18 }}>
-              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20 }}>
+              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 14, color: P.azulDark }}>Demanda vs Atendidos por Semana Epidemiológica</div>
                 {dataXSemana.length > 0 ? (
                   <ResponsiveContainer width="100%" height={210}>
@@ -5900,7 +5911,7 @@ export default function App() {
                   </ResponsiveContainer>
                 ) : <div style={{ color: P.muted, fontSize: 13, padding: 20 }}>Sin datos</div>}
               </div>
-              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20 }}>
+              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 14, color: P.azulDark }}>Destino de Derivaciones</div>
                 {dataDerivaciones.length > 0 ? (
                   <ResponsiveContainer width="100%" height={210}>
@@ -5922,7 +5933,7 @@ export default function App() {
         )}
 
         {tab === "dashboard" && <>
-          <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 14, padding: "20px 24px", marginTop: 16 }}>
+          <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "16px 20px", marginTop: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: mostrarComparador ? 20 : 0 }}>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: P.azulDark }}>📊 Comparar Períodos</div>
@@ -6247,7 +6258,7 @@ export default function App() {
 
             {/* Gráfico por establecimiento */}
             {dataAmbulanciasXEstablecimiento.length > 0 && (
-              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 22 }}>
+              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 22 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark, marginBottom: 14 }}>Retenciones por Establecimiento</div>
                 <ResponsiveContainer width="100%" height={Math.max(220, dataAmbulanciasXEstablecimiento.length * 36)}>
                   <BarChart data={dataAmbulanciasXEstablecimiento} layout="vertical" margin={{ top: 4, right: 28, left: 16, bottom: 4 }}>
@@ -6366,7 +6377,7 @@ export default function App() {
               </div>
             )}
 
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18 }}>
               <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark, marginBottom: 12 }}>📋 Formato esperado del Excel</div>
               {[
                 "Fila 1: Semanas epidemiológicas (SE 01, SE 02…)",
@@ -6407,7 +6418,16 @@ export default function App() {
           />
         )}
 
-      <style>{`@keyframes fadeIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }`}</style>
+      <style>{`
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  input, select, textarea { font-family: inherit; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: #F4F6FA; }
+  ::-webkit-scrollbar-thumb { background: #C2D0E4; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #1A3A6B; }
+`}</style>
     </div>
   );
 }
@@ -6650,7 +6670,7 @@ function ResumenAmbulancias({ registrosAmbulancias, filtroEstab, filtroPolo, POL
   });
 
   return (
-    <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 14, padding: "20px 24px", marginTop: 24 }}>
+    <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "16px 20px", marginTop: 24 }}>
       <div style={{ fontSize: 15, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>🚑 Retenciones de Ambulancias</div>
       <div style={{ fontSize: 12, color: P.muted, marginBottom: 16 }}>Resumen según filtros aplicados</div>
 
@@ -6815,7 +6835,7 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
       </div>
 
       {/* Gráfico Demanda */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "20px 16px", marginBottom: 16 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "16px", marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: P.azulDark, marginBottom: 16 }}>
           Demanda Total
           <span style={{ fontSize: 11, fontWeight: 400, color: P.muted, marginLeft: 12 }}>— histórico &nbsp;&nbsp; - - - proyectado</span>
@@ -6846,7 +6866,7 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
       </div>
 
       {/* Gráfico Respiratorias */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "20px 16px", marginBottom: 24 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "16px", marginBottom: 24 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: P.azulDark, marginBottom: 16 }}>
           Atenciones Respiratorias
           <span style={{ fontSize: 11, fontWeight: 400, color: P.muted, marginLeft: 12 }}>— histórico &nbsp;&nbsp; - - - proyectado</span>
@@ -6870,7 +6890,7 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
       </div>
 
       {/* Tabla resumen proyecciones */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "20px", marginBottom: 24 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "18px", marginBottom: 24 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: P.azulDark, marginBottom: 16 }}>Detalle de proyecciones</div>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
@@ -7087,7 +7107,7 @@ function TabTiemposEspera({ registros, P, inpS }) {
       </div>
 
       {/* Por establecimiento */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 14 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Por Establecimiento</div>
@@ -7149,7 +7169,7 @@ function TabTiemposEspera({ registros, P, inpS }) {
       </div>
 
       {/* Por SE */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 14 }}>
         <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>Promedio de la Red por Semana Epidemiológica</div>
         <div style={{ fontSize: 11, color: P.muted, marginBottom: 14 }}>Evolución semanal del tiempo de espera promedio</div>
         <ResponsiveContainer width="100%" height={240}>
@@ -7168,7 +7188,7 @@ function TabTiemposEspera({ registros, P, inpS }) {
       </div>
 
       {/* Por día */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 14 }}>
         <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>Promedio de la Red por Día</div>
         <div style={{ fontSize: 11, color: P.muted, marginBottom: 14 }}>Evolución diaria del tiempo de espera — barras rojas superan 180 min</div>
         <ResponsiveContainer width="100%" height={240}>
@@ -7188,7 +7208,7 @@ function TabTiemposEspera({ registros, P, inpS }) {
 
       {/* Días críticos */}
       {diasCriticos.length > 0 && (
-        <div style={{ background: "#fdecea", border: "1.5px solid #e74c3c", borderRadius: 12, padding: 20 }}>
+        <div style={{ background: "#fdecea", border: "1.5px solid #e74c3c", borderRadius: 8, padding: 18 }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: "#c0392b", marginBottom: 4 }}>⚠️ Días Críticos (sobre 180 min)</div>
           <div style={{ fontSize: 11, color: "#c0392b", marginBottom: 14 }}>Top 20 registros con mayor tiempo de espera según filtros aplicados</div>
           <div style={{ overflow: "auto" }}>
