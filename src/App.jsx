@@ -112,22 +112,22 @@ const AMBULANCIA_FILAS = 5;
 
 // Paleta SSMC / Minsal – fondo claro
 const P = {
-  azul:       "#005293",  // azul institucional SSMC
-  azulDark:   "#003366",
-  azulLight:  "#E8F1FA",
-  azulMid:    "#CCE0F5",
-  verde:      "#00833E",  // verde Minsal
-  verdeLight: "#E6F4ED",
-  amber:      "#D97706",
-  rojo:       "#C0392B",
-  rojoLight:  "#FDECEA",
-  gris:       "#64748B",
-  grisMid:    "#CBD5E1",
-  bg:         "#F0F4F8",
+  azul:       "#1A3A6B",  // azul SSMC institucional
+  azulDark:   "#0F2347",  // azul muy oscuro
+  azulLight:  "#EEF2F8",  // azul muy claro (fondos)
+  azulMid:    "#B8C8E0",  // azul medio (bordes)
+  rojo:       "#C0392B",  // rojo SSMC institucional
+  rojoLight:  "#FDECEA",  // rojo muy claro (alertas)
+  verde:      "#1A7A4A",  // verde sobrio
+  verdeLight: "#E8F5EE",
+  amber:      "#B45309",
+  gris:       "#6B7280",
+  grisMid:    "#E5E7EB",
+  bg:         "#F5F7FA",  // fondo general muy suave
   card:       "#FFFFFF",
-  border:     "#D1DCE8",
-  text:       "#1E2D3E",
-  muted:      "#5A7184",
+  border:     "#E2E8F0",  // bordes sutiles
+  text:       "#1A2332",
+  muted:      "#6B7280",
 };
 
 const DEMO_DATA = [
@@ -5509,58 +5509,67 @@ export default function App() {
         }}>{toast.msg}</div>
       )}
 
-      {/* Header SSMC */}
-      <div style={{ background: P.azulDark, padding: "0", borderBottom: `3px solid ${P.verde}` }}>
-        {/* Banda superior */}
-        <div style={{ background: P.azul, padding: "12px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            {/* Logo placeholder SSMC */}
+      {/* Header SSMC — minimalista institucional */}
+      <div style={{ background: P.azul, borderBottom: `3px solid ${P.rojo}` }}>
+        {/* Banda principal */}
+        <div style={{ padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            {/* Logo SSMC */}
             <div style={{
-              width: 44, height: 44, borderRadius: 8,
+              width: 48, height: 48, borderRadius: 6, overflow: "hidden",
               background: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 22, flexShrink: 0
-            }}>🏥</div>
+              flexShrink: 0, padding: 2
+            }}>
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Escudo_de_Chile.svg/240px-Escudo_de_Chile.svg.png"
+                alt="SSMC" style={{ width: 36, height: 36, objectFit: "contain" }}
+                onError={e => { e.target.style.display="none"; e.target.parentNode.innerHTML="🏥"; }}
+              />
+            </div>
             <div>
-              <div style={{ color: "#fff", fontWeight: 800, fontSize: 17, letterSpacing: "-0.3px", lineHeight: 1.2 }}>
-                Atenciones de Urgencia APS SSMC
+              <div style={{ color: "#fff", fontWeight: 700, fontSize: 16, letterSpacing: "-0.2px", lineHeight: 1.25 }}>
+                Atenciones de Urgencia APS
               </div>
-              <div style={{ color: "#A8CAEC", fontSize: 11, marginTop: 2 }}>
-                Servicio de Salud Metropolitano Central · Dirección de Atención Primaria
+              <div style={{ color: "#B8CEDE", fontSize: 11, marginTop: 1, fontWeight: 400 }}>
+                Servicio de Salud Metropolitano Central · Ministerio de Salud
               </div>
             </div>
           </div>
           <button onClick={exportExcel} style={{
-            background: P.verde, color: "#fff", border: "none", borderRadius: 7,
-            padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 700,
-            display: "flex", alignItems: "center", gap: 6, flexShrink: 0
+            background: "transparent", color: "#fff",
+            border: "1.5px solid rgba(255,255,255,0.4)",
+            borderRadius: 6, padding: "7px 16px", cursor: "pointer",
+            fontSize: 12, fontWeight: 600, letterSpacing: "0.02em",
+            display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
+            transition: "all 0.15s",
           }}>
-            ⬇ Exportar Excel
+            ↓ Exportar Excel
           </button>
         </div>
 
-        {/* Nav Tabs */}
-        <div style={{ display: "flex", paddingLeft: 24, paddingTop: 4 }}>
+        {/* Nav Tabs — limpio y minimalista */}
+        <div style={{ display: "flex", paddingLeft: 20, overflowX: "auto" }}>
           {[
-            { id: "dashboard", label: "📊 Resumen" },
-            { id: "formulario", label: "➕ Ingresar Registro" },
-            { id: "tabla", label: "📋 Tabla de Datos" },
-            { id: "ambulancias", label: "🚑 Retenciones Ambulancias" },
-            { id: "importar", label: "📥 Importar Excel" },
-            { id: "tiempos", label: "⏱️ Tiempos de Espera" },
-            { id: "proyecciones", label: "📈 Proyecciones" },
+            { id: "dashboard",    label: "Resumen" },
+            { id: "formulario",   label: "Ingresar" },
+            { id: "tabla",        label: "Tabla" },
+            { id: "ambulancias",  label: "Ambulancias" },
+            { id: "importar",     label: "Importar" },
+            { id: "tiempos",      label: "T° Espera" },
+            { id: "proyecciones", label: "Proyecciones" },
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
-              background: tab === t.id ? P.bg : "transparent",
-              color: tab === t.id ? P.azul : "#A8CAEC",
-              border: "none", borderRadius: "8px 8px 0 0",
-              padding: "9px 20px", cursor: "pointer", fontSize: 13, fontWeight: 700,
-              transition: "all 0.15s", marginRight: 2,
+              background: "transparent",
+              color: tab === t.id ? "#fff" : "rgba(255,255,255,0.55)",
+              border: "none",
+              borderBottom: tab === t.id ? `3px solid ${P.rojo}` : "3px solid transparent",
+              padding: "10px 18px", cursor: "pointer", fontSize: 13, fontWeight: tab === t.id ? 700 : 500,
+              transition: "all 0.15s", whiteSpace: "nowrap", letterSpacing: "0.01em",
             }}>{t.label}</button>
           ))}
         </div>
       </div>
 
-      <div style={{ padding: "24px 28px" }}>
+      <div style={{ padding: "20px 24px", background: "#F5F7FA", minHeight: "calc(100vh - 120px)" }}>
 
         {/* ── DASHBOARD ─────────────────────────────────────── */}
         {tab === "dashboard" && (
@@ -5617,7 +5626,7 @@ export default function App() {
             </div>
 
             {/* Filtros */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 10, padding: "14px 18px", marginBottom: 22, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "12px 16px", marginBottom: 18, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
               <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, alignSelf: "center", marginRight: 4 }}>🔍 Filtros</div>
               {[
                 { label: "Polo", options: POLOS, val: filtroPolo, set: setFiltroPolo },
@@ -5659,7 +5668,7 @@ export default function App() {
             </div>
 
             {/* Absorción de demanda por establecimiento */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 14, flexWrap: "wrap" }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Absorción de la Demanda por Establecimiento</div>
@@ -5724,7 +5733,7 @@ export default function App() {
             </div>
 
             {/* ── Atenciones totales por establecimiento ─────── */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
               <div style={{ marginBottom: 14 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Atenciones Totales por Establecimiento</div>
                 <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Suma de pacientes atendidos según filtros aplicados</div>
@@ -5787,7 +5796,7 @@ export default function App() {
             </div>
 
                         {/* Gráfico comportamiento diario — ancho completo */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Comportamiento Diario de Variables</div>
@@ -5817,7 +5826,7 @@ export default function App() {
             </div>
 
             {/* Gráfico: Atenciones diarias vs % Respiratorio */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
               <div style={{ marginBottom: 14 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Atenciones Diarias vs % Respiratorio</div>
                 <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Barras: total atendidos por día · Línea: porcentaje de atenciones respiratorias</div>
@@ -5855,7 +5864,7 @@ export default function App() {
             </div>
 
             {/* Gráfico: Atendidos vs Respiratorias por semana + acumulado */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
               <div style={{ marginBottom: 14 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Atenciones Totales v/s Respiratorias por Semana · Acumulado</div>
                 <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Barras: valores semanales · Líneas: acumulado progresivo</div>
@@ -5884,7 +5893,7 @@ export default function App() {
 
             {/* Gráficos fila 2 */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 18 }}>
-              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20 }}>
+              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 14, color: P.azulDark }}>Demanda vs Atendidos por Semana Epidemiológica</div>
                 {dataXSemana.length > 0 ? (
                   <ResponsiveContainer width="100%" height={210}>
@@ -5900,7 +5909,7 @@ export default function App() {
                   </ResponsiveContainer>
                 ) : <div style={{ color: P.muted, fontSize: 13, padding: 20 }}>Sin datos</div>}
               </div>
-              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20 }}>
+              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 14, color: P.azulDark }}>Destino de Derivaciones</div>
                 {dataDerivaciones.length > 0 ? (
                   <ResponsiveContainer width="100%" height={210}>
@@ -5922,7 +5931,7 @@ export default function App() {
         )}
 
         {tab === "dashboard" && <>
-          <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 14, padding: "20px 24px", marginTop: 16 }}>
+          <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "18px 20px", marginTop: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: mostrarComparador ? 20 : 0 }}>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: P.azulDark }}>📊 Comparar Períodos</div>
@@ -6247,7 +6256,7 @@ export default function App() {
 
             {/* Gráfico por establecimiento */}
             {dataAmbulanciasXEstablecimiento.length > 0 && (
-              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 22 }}>
+              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 22 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark, marginBottom: 14 }}>Retenciones por Establecimiento</div>
                 <ResponsiveContainer width="100%" height={Math.max(220, dataAmbulanciasXEstablecimiento.length * 36)}>
                   <BarChart data={dataAmbulanciasXEstablecimiento} layout="vertical" margin={{ top: 4, right: 28, left: 16, bottom: 4 }}>
@@ -6366,7 +6375,7 @@ export default function App() {
               </div>
             )}
 
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18 }}>
               <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark, marginBottom: 12 }}>📋 Formato esperado del Excel</div>
               {[
                 "Fila 1: Semanas epidemiológicas (SE 01, SE 02…)",
@@ -6407,7 +6416,18 @@ export default function App() {
           />
         )}
 
-      <style>{`@keyframes fadeIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }`}</style>
+      <style>{`
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  input, select, textarea { font-family: inherit; }
+  select option { font-weight: 400; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #F5F7FA; }
+  ::-webkit-scrollbar-thumb { background: #B8C8E0; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #1A3A6B; }
+  button:hover { opacity: 0.88; }
+`}</style>
     </div>
   );
 }
@@ -6650,7 +6670,7 @@ function ResumenAmbulancias({ registrosAmbulancias, filtroEstab, filtroPolo, POL
   });
 
   return (
-    <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 14, padding: "20px 24px", marginTop: 24 }}>
+    <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "18px 20px", marginTop: 24 }}>
       <div style={{ fontSize: 15, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>🚑 Retenciones de Ambulancias</div>
       <div style={{ fontSize: 12, color: P.muted, marginBottom: 16 }}>Resumen según filtros aplicados</div>
 
@@ -6815,7 +6835,7 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
       </div>
 
       {/* Gráfico Demanda */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "20px 16px", marginBottom: 16 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "16px", marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: P.azulDark, marginBottom: 16 }}>
           Demanda Total
           <span style={{ fontSize: 11, fontWeight: 400, color: P.muted, marginLeft: 12 }}>— histórico &nbsp;&nbsp; - - - proyectado</span>
@@ -6846,7 +6866,7 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
       </div>
 
       {/* Gráfico Respiratorias */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "20px 16px", marginBottom: 24 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "16px", marginBottom: 24 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: P.azulDark, marginBottom: 16 }}>
           Atenciones Respiratorias
           <span style={{ fontSize: 11, fontWeight: 400, color: P.muted, marginLeft: 12 }}>— histórico &nbsp;&nbsp; - - - proyectado</span>
@@ -6870,7 +6890,7 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
       </div>
 
       {/* Tabla resumen proyecciones */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "20px", marginBottom: 24 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "18px", marginBottom: 24 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: P.azulDark, marginBottom: 16 }}>Detalle de proyecciones</div>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
@@ -6996,9 +7016,10 @@ function TabTiemposEspera({ registros, P, inpS }) {
 
   // ── KPIs generales ────────────────────────────────────────────────────────
   const todos = base.map(r => Number(r.tiempo_espera));
-  const promGeneral = Math.round(todos.reduce((a,b) => a+b,0) / todos.length);
-  const maxGeneral  = Math.max(...todos);
-  const nAlerta     = dataEstab.filter(e => e.alerta).length;
+  const promGeneral  = Math.round(todos.reduce((a,b) => a+b,0) / todos.length);
+  const maxGeneral   = Math.max(...todos);
+  const estabMaximo  = dataEstab.find(e => e.maximo === maxGeneral)?.establecimiento || "";
+  const nAlerta      = dataEstab.filter(e => e.alerta).length;
 
   // ── Tendencia últimas 8 SE ────────────────────────────────────────────────
   const ultimas8 = dataSE.slice(-8);
@@ -7067,27 +7088,56 @@ function TabTiemposEspera({ registros, P, inpS }) {
       </div>
 
       {/* KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12, marginBottom: 24 }}>
-        {[
-          { label: "Promedio Red",     val: `${promGeneral} min`, color: promGeneral > 180 ? "#e74c3c" : P.azul,  alerta: promGeneral > 180 },
-          { label: "Máximo registrado",val: `${maxGeneral} min`,  color: maxGeneral > 180  ? "#e74c3c" : P.amber, alerta: maxGeneral > 180  },
-          { label: "Centros en alerta",val: `${nAlerta} de ${dataEstab.length}`, color: nAlerta > 0 ? "#e74c3c" : P.verde, alerta: nAlerta > 0 },
-          { label: "Tendencia (últ. 8 SE)", val: tendencia === 0 ? "Estable" : `${tendencia > 0 ? "▲" : "▼"} ${Math.abs(tendencia)} min`,
-            color: tendencia > 15 ? "#e74c3c" : tendencia < -15 ? P.verde : P.amber, alerta: tendencia > 15 },
-        ].map(({ label, val, color, alerta }) => (
-          <div key={label} style={{
-            background: alerta ? "#fdecea" : P.azulLight, borderRadius: 10, padding: "12px 16px",
-            borderLeft: `4px solid ${color}`, border: alerta ? `1.5px solid #e74c3c` : undefined,
-          }}>
-            <div style={{ fontSize: 11, color: P.muted, fontWeight: 600 }}>{label}</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color }}>{val}</div>
-            {alerta && <div style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700, marginTop: 2 }}>⚠️ Sobre umbral</div>}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 24 }}>
+
+        {/* Promedio Red */}
+        <div style={{ background: promGeneral > 180 ? "#fdecea" : P.azulLight, borderRadius: 10, padding: "12px 16px", borderLeft: `4px solid ${promGeneral > 180 ? "#e74c3c" : P.azul}` }}>
+          <div style={{ fontSize: 11, color: P.muted, fontWeight: 600 }}>Promedio Red</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: promGeneral > 180 ? "#e74c3c" : P.azul }}>{promGeneral} min</div>
+          {promGeneral > 180 && <div style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700, marginTop: 2 }}>⚠️ Sobre umbral</div>}
+        </div>
+
+        {/* Máximo con establecimiento */}
+        <div style={{ background: maxGeneral > 180 ? "#fdecea" : P.azulLight, borderRadius: 10, padding: "12px 16px", borderLeft: `4px solid ${maxGeneral > 180 ? "#e74c3c" : P.amber}`, border: maxGeneral > 180 ? "1.5px solid #e74c3c" : undefined }}>
+          <div style={{ fontSize: 11, color: P.muted, fontWeight: 600 }}>Máximo registrado</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: maxGeneral > 180 ? "#e74c3c" : P.amber }}>{maxGeneral} min</div>
+          <div style={{ fontSize: 10, color: "#c0392b", fontWeight: 600, marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{estabMaximo}</div>
+          {maxGeneral > 180 && <div style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700, marginTop: 2 }}>⚠️ Sobre umbral</div>}
+        </div>
+
+        {/* Centros en alerta */}
+        <div style={{ background: nAlerta > 0 ? "#fdecea" : P.azulLight, borderRadius: 10, padding: "12px 16px", borderLeft: `4px solid ${nAlerta > 0 ? "#e74c3c" : P.verde}`, border: nAlerta > 0 ? "1.5px solid #e74c3c" : undefined }}>
+          <div style={{ fontSize: 11, color: P.muted, fontWeight: 600 }}>Centros en alerta</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: nAlerta > 0 ? "#e74c3c" : P.verde }}>{nAlerta} de {dataEstab.length}</div>
+          {nAlerta > 0 && <div style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700, marginTop: 2 }}>⚠️ Sobre umbral</div>}
+        </div>
+
+        {/* Tendencia */}
+        <div style={{ background: tendencia > 15 ? "#fdecea" : P.azulLight, borderRadius: 10, padding: "12px 16px", borderLeft: `4px solid ${tendencia > 15 ? "#e74c3c" : tendencia < -15 ? P.verde : P.amber}` }}>
+          <div style={{ fontSize: 11, color: P.muted, fontWeight: 600 }}>Tendencia (últ. 8 SE)</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: tendencia > 15 ? "#e74c3c" : tendencia < -15 ? P.verde : P.amber }}>
+            {tendencia === 0 ? "Estable" : `${tendencia > 0 ? "▲" : "▼"} ${Math.abs(tendencia)} min`}
           </div>
-        ))}
+          {tendencia > 15 && <div style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700, marginTop: 2 }}>⚠️ Sobre umbral</div>}
+        </div>
+
+        {/* Selector SE actual */}
+        <div style={{ background: P.azulLight, borderRadius: 10, padding: "12px 16px", borderLeft: `4px solid ${P.azulMid}` }}>
+          <div style={{ fontSize: 11, color: P.muted, fontWeight: 600, marginBottom: 6 }}>Ver semana específica</div>
+          <select
+            value={tSEDesde === tSEHasta ? tSEDesde : ""}
+            onChange={e => { setTSEDesde(e.target.value); setTSEHasta(e.target.value); }}
+            style={{ width: "100%", background: "#fff", border: `1px solid ${P.border}`, borderRadius: 6, padding: "5px 8px", fontSize: 12, color: P.azulDark, fontWeight: 700 }}
+          >
+            <option value="">Todas las semanas</option>
+            {semanasDisp.map(se => <option key={se}>{se}</option>)}
+          </select>
+        </div>
+
       </div>
 
       {/* Por establecimiento */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Por Establecimiento</div>
@@ -7149,7 +7199,7 @@ function TabTiemposEspera({ registros, P, inpS }) {
       </div>
 
       {/* Por SE */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
         <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>Promedio de la Red por Semana Epidemiológica</div>
         <div style={{ fontSize: 11, color: P.muted, marginBottom: 14 }}>Evolución semanal del tiempo de espera promedio</div>
         <ResponsiveContainer width="100%" height={240}>
@@ -7168,7 +7218,7 @@ function TabTiemposEspera({ registros, P, inpS }) {
       </div>
 
       {/* Por día */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
         <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>Promedio de la Red por Día</div>
         <div style={{ fontSize: 11, color: P.muted, marginBottom: 14 }}>Evolución diaria del tiempo de espera — barras rojas superan 180 min</div>
         <ResponsiveContainer width="100%" height={240}>
@@ -7188,7 +7238,7 @@ function TabTiemposEspera({ registros, P, inpS }) {
 
       {/* Días críticos */}
       {diasCriticos.length > 0 && (
-        <div style={{ background: "#fdecea", border: "1.5px solid #e74c3c", borderRadius: 12, padding: 20 }}>
+        <div style={{ background: "#fdecea", border: "1.5px solid #e74c3c", borderRadius: 8, padding: 18 }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: "#c0392b", marginBottom: 4 }}>⚠️ Días Críticos (sobre 180 min)</div>
           <div style={{ fontSize: 11, color: "#c0392b", marginBottom: 14 }}>Top 20 registros con mayor tiempo de espera según filtros aplicados</div>
           <div style={{ overflow: "auto" }}>
