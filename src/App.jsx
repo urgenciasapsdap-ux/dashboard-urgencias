@@ -3,7 +3,7 @@ import * as XLSX from "xlsx";
 import { createClient } from "@supabase/supabase-js";
 import {
   BarChart, Bar, LineChart, Line, ComposedChart, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, ReferenceLine
+  Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell
 } from "recharts";
 
 // ── Supabase config ──────────────────────────────────────────────────────────
@@ -112,22 +112,22 @@ const AMBULANCIA_FILAS = 5;
 
 // Paleta SSMC / Minsal – fondo claro
 const P = {
-  azul:       "#1A3A6B",  // azul SSMC institucional
-  azulDark:   "#0F2347",  // azul muy oscuro
-  azulLight:  "#EEF2F8",  // azul muy claro (fondos)
-  azulMid:    "#B8C8E0",  // azul medio (bordes)
-  rojo:       "#C0392B",  // rojo SSMC institucional
-  rojoLight:  "#FDECEA",  // rojo muy claro (alertas)
-  verde:      "#1A7A4A",  // verde sobrio
-  verdeLight: "#E8F5EE",
-  amber:      "#B45309",
-  gris:       "#6B7280",
-  grisMid:    "#E5E7EB",
-  bg:         "#F5F7FA",  // fondo general muy suave
+  azul:       "#005293",  // azul institucional SSMC
+  azulDark:   "#003366",
+  azulLight:  "#E8F1FA",
+  azulMid:    "#CCE0F5",
+  verde:      "#00833E",  // verde Minsal
+  verdeLight: "#E6F4ED",
+  amber:      "#D97706",
+  rojo:       "#C0392B",
+  rojoLight:  "#FDECEA",
+  gris:       "#64748B",
+  grisMid:    "#CBD5E1",
+  bg:         "#F0F4F8",
   card:       "#FFFFFF",
-  border:     "#E2E8F0",  // bordes sutiles
-  text:       "#1A2332",
-  muted:      "#6B7280",
+  border:     "#D1DCE8",
+  text:       "#1E2D3E",
+  muted:      "#5A7184",
 };
 
 const DEMO_DATA = [
@@ -5509,67 +5509,57 @@ export default function App() {
         }}>{toast.msg}</div>
       )}
 
-      {/* Header SSMC — minimalista institucional */}
-      <div style={{ background: P.azul, borderBottom: `3px solid ${P.rojo}` }}>
-        {/* Banda principal */}
-        <div style={{ padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            {/* Logo SSMC */}
+      {/* Header SSMC */}
+      <div style={{ background: P.azulDark, padding: "0", borderBottom: `3px solid ${P.verde}` }}>
+        {/* Banda superior */}
+        <div style={{ background: P.azul, padding: "12px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            {/* Logo placeholder SSMC */}
             <div style={{
-              width: 48, height: 48, borderRadius: 6, overflow: "hidden",
+              width: 44, height: 44, borderRadius: 8,
               background: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
-              flexShrink: 0, padding: 2
-            }}>
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Escudo_de_Chile.svg/240px-Escudo_de_Chile.svg.png"
-                alt="SSMC" style={{ width: 36, height: 36, objectFit: "contain" }}
-                onError={e => { e.target.style.display="none"; e.target.parentNode.innerHTML="🏥"; }}
-              />
-            </div>
+              fontSize: 22, flexShrink: 0
+            }}>🏥</div>
             <div>
-              <div style={{ color: "#fff", fontWeight: 700, fontSize: 16, letterSpacing: "-0.2px", lineHeight: 1.25 }}>
-                Atenciones de Urgencia APS
+              <div style={{ color: "#fff", fontWeight: 800, fontSize: 17, letterSpacing: "-0.3px", lineHeight: 1.2 }}>
+                Atenciones de Urgencia APS SSMC
               </div>
-              <div style={{ color: "#B8CEDE", fontSize: 11, marginTop: 1, fontWeight: 400 }}>
-                Servicio de Salud Metropolitano Central · Ministerio de Salud
+              <div style={{ color: "#A8CAEC", fontSize: 11, marginTop: 2 }}>
+                Servicio de Salud Metropolitano Central · Dirección de Atención Primaria
               </div>
             </div>
           </div>
           <button onClick={exportExcel} style={{
-            background: "transparent", color: "#fff",
-            border: "1.5px solid rgba(255,255,255,0.4)",
-            borderRadius: 6, padding: "7px 16px", cursor: "pointer",
-            fontSize: 12, fontWeight: 600, letterSpacing: "0.02em",
-            display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
-            transition: "all 0.15s",
+            background: P.verde, color: "#fff", border: "none", borderRadius: 7,
+            padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 700,
+            display: "flex", alignItems: "center", gap: 6, flexShrink: 0
           }}>
-            ↓ Exportar Excel
+            ⬇ Exportar Excel
           </button>
         </div>
 
-        {/* Nav Tabs — limpio y minimalista */}
-        <div style={{ display: "flex", paddingLeft: 20, overflowX: "auto" }}>
+        {/* Nav Tabs */}
+        <div style={{ display: "flex", paddingLeft: 24, paddingTop: 4 }}>
           {[
-            { id: "dashboard",    label: "Resumen" },
-            { id: "formulario",   label: "Ingresar" },
-            { id: "tabla",        label: "Tabla" },
-            { id: "ambulancias",  label: "Ambulancias" },
-            { id: "importar",     label: "Importar" },
-            { id: "tiempos",      label: "T° Espera" },
-            { id: "proyecciones", label: "Proyecciones" },
+            { id: "dashboard", label: "📊 Resumen" },
+            { id: "formulario", label: "➕ Ingresar Registro" },
+            { id: "tabla", label: "📋 Tabla de Datos" },
+            { id: "ambulancias", label: "🚑 Retenciones Ambulancias" },
+            { id: "importar", label: "📥 Importar Excel" },
+            { id: "proyecciones", label: "📈 Proyecciones" },
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
-              background: "transparent",
-              color: tab === t.id ? "#fff" : "rgba(255,255,255,0.55)",
-              border: "none",
-              borderBottom: tab === t.id ? `3px solid ${P.rojo}` : "3px solid transparent",
-              padding: "10px 18px", cursor: "pointer", fontSize: 13, fontWeight: tab === t.id ? 700 : 500,
-              transition: "all 0.15s", whiteSpace: "nowrap", letterSpacing: "0.01em",
+              background: tab === t.id ? P.bg : "transparent",
+              color: tab === t.id ? P.azul : "#A8CAEC",
+              border: "none", borderRadius: "8px 8px 0 0",
+              padding: "9px 20px", cursor: "pointer", fontSize: 13, fontWeight: 700,
+              transition: "all 0.15s", marginRight: 2,
             }}>{t.label}</button>
           ))}
         </div>
       </div>
 
-      <div style={{ padding: "20px 24px", background: "#F5F7FA", minHeight: "calc(100vh - 120px)" }}>
+      <div style={{ padding: "24px 28px" }}>
 
         {/* ── DASHBOARD ─────────────────────────────────────── */}
         {tab === "dashboard" && (
@@ -5626,7 +5616,7 @@ export default function App() {
             </div>
 
             {/* Filtros */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "12px 16px", marginBottom: 18, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 10, padding: "14px 18px", marginBottom: 22, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
               <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, alignSelf: "center", marginRight: 4 }}>🔍 Filtros</div>
               {[
                 { label: "Polo", options: POLOS, val: filtroPolo, set: setFiltroPolo },
@@ -5668,7 +5658,7 @@ export default function App() {
             </div>
 
             {/* Absorción de demanda por establecimiento */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 14, flexWrap: "wrap" }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Absorción de la Demanda por Establecimiento</div>
@@ -5733,7 +5723,7 @@ export default function App() {
             </div>
 
             {/* ── Atenciones totales por establecimiento ─────── */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
               <div style={{ marginBottom: 14 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Atenciones Totales por Establecimiento</div>
                 <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Suma de pacientes atendidos según filtros aplicados</div>
@@ -5795,8 +5785,132 @@ export default function App() {
               )}
             </div>
 
-                        {/* Gráfico comportamiento diario — ancho completo */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
+            {/* ── Tiempos de Espera ─────────────────────────── */}
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>⏱️ Tiempos de Espera</div>
+                <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Promedio por establecimiento y evolución diaria según filtros aplicados</div>
+              </div>
+
+              {(() => {
+                // Promedio por establecimiento
+                const porEstabEspera = {};
+                filtrados.forEach(r => {
+                  if (r.tiempo_espera == null || r.tiempo_espera === "") return;
+                  const e = r.establecimiento;
+                  if (!porEstabEspera[e]) porEstabEspera[e] = { total: 0, n: 0 };
+                  porEstabEspera[e].total += Number(r.tiempo_espera);
+                  porEstabEspera[e].n++;
+                });
+                const dataEstab = Object.entries(porEstabEspera)
+                  .map(([e, d]) => ({ establecimiento: e, promedio: Math.round(d.total / d.n) }))
+                  .sort((a, b) => b.promedio - a.promedio);
+
+                // Evolución diaria
+                const porDiaEspera = {};
+                filtrados.forEach(r => {
+                  if (!r.fecha || r.tiempo_espera == null || r.tiempo_espera === "") return;
+                  const dia = r.fecha.slice(0, 10);
+                  if (!porDiaEspera[dia]) porDiaEspera[dia] = { total: 0, n: 0 };
+                  porDiaEspera[dia].total += Number(r.tiempo_espera);
+                  porDiaEspera[dia].n++;
+                });
+                const dataDia = Object.entries(porDiaEspera)
+                  .sort(([a], [b]) => a.localeCompare(b))
+                  .map(([dia, d]) => ({ dia, promedio: Math.round(d.total / d.n) }));
+
+                const promedioGeneral = dataEstab.length
+                  ? Math.round(dataEstab.reduce((a, d) => a + d.promedio, 0) / dataEstab.length)
+                  : 0;
+                const maximo = dataEstab.length ? Math.max(...dataEstab.map(d => d.promedio)) : 0;
+                const minimo = dataEstab.length ? Math.min(...dataEstab.map(d => d.promedio)) : 0;
+
+                if (dataEstab.length === 0) return (
+                  <div style={{ height: 80, display: "flex", alignItems: "center", justifyContent: "center", color: P.muted, fontSize: 13 }}>
+                    Sin datos de tiempo de espera con los filtros aplicados.
+                  </div>
+                );
+
+                return (
+                  <div>
+                    {/* KPIs espera */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
+                      {[
+                        { label: "Promedio General", val: promedioGeneral, color: promedioGeneral > 180 ? "#e74c3c" : P.azul },
+                        { label: "Mayor Espera",     val: maximo,          color: maximo > 180 ? "#e74c3c" : P.verde },
+                        { label: "Menor Espera",     val: minimo,          color: minimo > 180 ? "#e74c3c" : P.verde },
+                      ].map(({ label, val, color }) => (
+                        <div key={label} style={{
+                          background: val > 180 ? "#fdecea" : P.azulLight,
+                          borderRadius: 10, padding: "12px 16px",
+                          borderLeft: `4px solid ${color}`,
+                          border: val > 180 ? `1.5px solid #e74c3c` : undefined,
+                        }}>
+                          <div style={{ fontSize: 11, color: P.muted, fontWeight: 600 }}>{label}</div>
+                          <div style={{ fontSize: 20, fontWeight: 800, color }}>{val} min</div>
+                          {val > 180 && <div style={{ fontSize: 10, fontWeight: 700, color: "#e74c3c", marginTop: 2 }}>⚠️ Sobre límite (180 min)</div>}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Gráficos lado a lado */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 18 }}>
+
+                      {/* Por establecimiento */}
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, marginBottom: 10 }}>Por establecimiento (min promedio)</div>
+                        <ResponsiveContainer width="100%" height={Math.max(200, dataEstab.length * 36)}>
+                          <BarChart data={dataEstab} layout="vertical" margin={{ top: 4, right: 40, left: 16, bottom: 4 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke={P.grisMid} horizontal={false} />
+                            <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={v => `${v} min`} />
+                            <YAxis type="category" dataKey="establecimiento" width={145} tick={{ fontSize: 10 }} />
+                            <Tooltip formatter={v => [`${v} min`, "T° Espera Prom."]} />
+                            <ReferenceLine x={180} stroke="#e74c3c" strokeDasharray="4 2"
+                              label={{ value: "⚠️ 180 min", position: "top", fontSize: 10, fill: "#e74c3c" }} />
+                            <Bar dataKey="promedio" radius={[0,6,6,0]} barSize={18}>
+                              {dataEstab.map((d, i) => (
+                                <Cell key={i} fill={d.promedio > 180 ? "#e74c3c" : d.promedio === minimo ? P.verde : P.azul} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      {/* Evolución diaria */}
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, marginBottom: 10 }}>Evolución diaria (min promedio red)</div>
+                        <ResponsiveContainer width="100%" height={Math.max(200, dataEstab.length * 36)}>
+                          <ComposedChart data={dataDia} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke={P.grisMid} />
+                            <XAxis dataKey="dia" tick={{ fontSize: 10 }}
+                              interval={dataDia.length > 20 ? Math.floor(dataDia.length / 6) : 0}
+                              angle={dataDia.length > 15 ? -30 : 0}
+                              textAnchor={dataDia.length > 15 ? "end" : "middle"}
+                              height={dataDia.length > 15 ? 45 : 25}
+                            />
+                            <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v}m`} />
+                            <Tooltip formatter={v => [`${v} min`, "T° Espera Prom."]} />
+                            <ReferenceLine y={180} stroke="#e74c3c" strokeDasharray="4 2"
+                              label={{ value: "⚠️ 180 min", position: "right", fontSize: 10, fill: "#e74c3c" }} />
+                            <ReferenceLine y={promedioGeneral} stroke={P.azul} strokeDasharray="4 2"
+                              label={{ value: `Prom: ${promedioGeneral}m`, position: "insideTopRight", fontSize: 10, fill: P.azul }} />
+                            <Bar dataKey="promedio" radius={[3,3,0,0]} barSize={dataDia.length > 30 ? 4 : 8}>
+                              {dataDia.map((d, i) => (
+                                <Cell key={i} fill={d.promedio > 180 ? "#e74c3c80" : `${P.amber}80`} />
+                              ))}
+                            </Bar>
+                            <Line type="monotone" dataKey="promedio" stroke={P.amber} strokeWidth={2} dot={false} />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Gráfico comportamiento diario — ancho completo */}
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Comportamiento Diario de Variables</div>
@@ -5826,7 +5940,7 @@ export default function App() {
             </div>
 
             {/* Gráfico: Atenciones diarias vs % Respiratorio */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
               <div style={{ marginBottom: 14 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Atenciones Diarias vs % Respiratorio</div>
                 <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Barras: total atendidos por día · Línea: porcentaje de atenciones respiratorias</div>
@@ -5864,7 +5978,7 @@ export default function App() {
             </div>
 
             {/* Gráfico: Atendidos vs Respiratorias por semana + acumulado */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 18 }}>
               <div style={{ marginBottom: 14 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Atenciones Totales v/s Respiratorias por Semana · Acumulado</div>
                 <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Barras: valores semanales · Líneas: acumulado progresivo</div>
@@ -5893,7 +6007,7 @@ export default function App() {
 
             {/* Gráficos fila 2 */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 18 }}>
-              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18 }}>
+              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 14, color: P.azulDark }}>Demanda vs Atendidos por Semana Epidemiológica</div>
                 {dataXSemana.length > 0 ? (
                   <ResponsiveContainer width="100%" height={210}>
@@ -5909,7 +6023,7 @@ export default function App() {
                   </ResponsiveContainer>
                 ) : <div style={{ color: P.muted, fontSize: 13, padding: 20 }}>Sin datos</div>}
               </div>
-              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18 }}>
+              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 14, color: P.azulDark }}>Destino de Derivaciones</div>
                 {dataDerivaciones.length > 0 ? (
                   <ResponsiveContainer width="100%" height={210}>
@@ -5931,7 +6045,7 @@ export default function App() {
         )}
 
         {tab === "dashboard" && <>
-          <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "18px 20px", marginTop: 16 }}>
+          <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 14, padding: "20px 24px", marginTop: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: mostrarComparador ? 20 : 0 }}>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: P.azulDark }}>📊 Comparar Períodos</div>
@@ -6256,7 +6370,7 @@ export default function App() {
 
             {/* Gráfico por establecimiento */}
             {dataAmbulanciasXEstablecimiento.length > 0 && (
-              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 22 }}>
+              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20, marginBottom: 22 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark, marginBottom: 14 }}>Retenciones por Establecimiento</div>
                 <ResponsiveContainer width="100%" height={Math.max(220, dataAmbulanciasXEstablecimiento.length * 36)}>
                   <BarChart data={dataAmbulanciasXEstablecimiento} layout="vertical" margin={{ top: 4, right: 28, left: 16, bottom: 4 }}>
@@ -6375,7 +6489,7 @@ export default function App() {
               </div>
             )}
 
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20 }}>
               <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark, marginBottom: 12 }}>📋 Formato esperado del Excel</div>
               {[
                 "Fila 1: Semanas epidemiológicas (SE 01, SE 02…)",
@@ -6392,17 +6506,6 @@ export default function App() {
           </div>
         )}
 
-        {/* ── TIEMPOS DE ESPERA ───────────────────────────────── */}
-        {tab === "tiempos" && (
-          <TabTiemposEspera
-            registros={registros}
-            filtroPolo={filtroPolo}
-            filtroEstab={filtroEstab}
-            filtroSemana={filtroSemana}
-            P={P} inpS={inpS}
-          />
-        )}
-
         {/* ── PROYECCIONES ─────────────────────────────────────── */}
         {tab === "proyecciones" && (
           <Proyecciones
@@ -6416,18 +6519,7 @@ export default function App() {
           />
         )}
 
-      <style>{`
-  @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
-  * { box-sizing: border-box; }
-  body { margin: 0; }
-  input, select, textarea { font-family: inherit; }
-  select option { font-weight: 400; }
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: #F5F7FA; }
-  ::-webkit-scrollbar-thumb { background: #B8C8E0; border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #1A3A6B; }
-  button:hover { opacity: 0.88; }
-`}</style>
+      <style>{`@keyframes fadeIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }`}</style>
     </div>
   );
 }
@@ -6670,7 +6762,7 @@ function ResumenAmbulancias({ registrosAmbulancias, filtroEstab, filtroPolo, POL
   });
 
   return (
-    <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "18px 20px", marginTop: 24 }}>
+    <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 14, padding: "20px 24px", marginTop: 24 }}>
       <div style={{ fontSize: 15, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>🚑 Retenciones de Ambulancias</div>
       <div style={{ fontSize: 12, color: P.muted, marginBottom: 16 }}>Resumen según filtros aplicados</div>
 
@@ -6835,7 +6927,7 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
       </div>
 
       {/* Gráfico Demanda */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "16px", marginBottom: 16 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "20px 16px", marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: P.azulDark, marginBottom: 16 }}>
           Demanda Total
           <span style={{ fontSize: 11, fontWeight: 400, color: P.muted, marginLeft: 12 }}>— histórico &nbsp;&nbsp; - - - proyectado</span>
@@ -6866,7 +6958,7 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
       </div>
 
       {/* Gráfico Respiratorias */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "16px", marginBottom: 24 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "20px 16px", marginBottom: 24 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: P.azulDark, marginBottom: 16 }}>
           Atenciones Respiratorias
           <span style={{ fontSize: 11, fontWeight: 400, color: P.muted, marginLeft: 12 }}>— histórico &nbsp;&nbsp; - - - proyectado</span>
@@ -6890,7 +6982,7 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
       </div>
 
       {/* Tabla resumen proyecciones */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "18px", marginBottom: 24 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "20px", marginBottom: 24 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: P.azulDark, marginBottom: 16 }}>Detalle de proyecciones</div>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
@@ -6922,348 +7014,6 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
             : `Método: regresión lineal sobre las últimas ${Math.min(8, historial.length)} semanas`}
         </div>
       </div>
-    </div>
-  );
-}
-
-// ── Tab Tiempos de Espera ─────────────────────────────────────────────────────
-function TabTiemposEspera({ registros, P, inpS }) {
-  const [vistaEstab, setVistaEstab] = React.useState("promedio");
-  const [tPolo,    setTPolo]    = React.useState("Todos");
-  const [tEstab,   setTEstab]   = React.useState("Todos");
-  const [tSEDesde, setTSEDesde] = React.useState("");
-  const [tSEHasta, setTSEHasta] = React.useState("");
-
-  // Opciones disponibles
-  const semanasDisp = React.useMemo(() =>
-    [...new Set(registros.map(r => r.semana_epi).filter(Boolean))].sort()
-  , [registros]);
-  const establDisp = React.useMemo(() =>
-    [...new Set(registros.map(r => r.establecimiento).filter(Boolean))].sort()
-  , [registros]);
-
-  const selStyle = { ...inpS, fontSize: 12, padding: "6px 10px" };
-
-  // Aplicar filtros propios
-  const base = registros.filter(r =>
-    r.tiempo_espera != null && r.tiempo_espera !== "" &&
-    (tPolo  === "Todos" || getPolo(r.establecimiento) === tPolo) &&
-    (tEstab === "Todos" || r.establecimiento === tEstab) &&
-    (!tSEDesde || (r.semana_epi >= tSEDesde)) &&
-    (!tSEHasta || (r.semana_epi <= tSEHasta))
-  );
-
-  if (base.length === 0) return (
-    <div style={{ textAlign: "center", padding: 60, color: P.muted, fontSize: 14 }}>
-      Sin datos de tiempo de espera con los filtros aplicados.
-    </div>
-  );
-
-  // ── Por establecimiento ───────────────────────────────────────────────────
-  const porEstab = {};
-  base.forEach(r => {
-    const e = r.establecimiento;
-    if (!porEstab[e]) porEstab[e] = { vals: [] };
-    porEstab[e].vals.push(Number(r.tiempo_espera));
-  });
-  const dataEstab = Object.entries(porEstab).map(([e, d]) => {
-    const sorted = [...d.vals].sort((a,b) => a-b);
-    const prom = Math.round(d.vals.reduce((a,b) => a+b,0) / d.vals.length);
-    return {
-      establecimiento: e,
-      promedio: prom,
-      minimo: Math.min(...d.vals),
-      maximo: Math.max(...d.vals),
-      n: d.vals.length,
-      alerta: prom > 180,
-    };
-  }).sort((a,b) => b.promedio - a.promedio);
-
-  // ── Por SE (red completa) ─────────────────────────────────────────────────
-  const porSE = {};
-  base.forEach(r => {
-    const se = r.semana_epi;
-    if (!se) return;
-    if (!porSE[se]) porSE[se] = { vals: [] };
-    porSE[se].vals.push(Number(r.tiempo_espera));
-  });
-  const dataSE = Object.entries(porSE).sort(([a],[b]) => a.localeCompare(b)).map(([se, d]) => ({
-    se,
-    promedio: Math.round(d.vals.reduce((a,b) => a+b,0) / d.vals.length),
-    maximo: Math.max(...d.vals),
-    minimo: Math.min(...d.vals),
-  }));
-
-  // ── Por día (red completa) ────────────────────────────────────────────────
-  const porDia = {};
-  base.forEach(r => {
-    const dia = r.fecha?.slice(0,10);
-    if (!dia) return;
-    if (!porDia[dia]) porDia[dia] = { vals: [] };
-    porDia[dia].vals.push(Number(r.tiempo_espera));
-  });
-  const dataDia = Object.entries(porDia).sort(([a],[b]) => a.localeCompare(b)).map(([dia, d]) => ({
-    dia,
-    promedio: Math.round(d.vals.reduce((a,b) => a+b,0) / d.vals.length),
-  }));
-
-  // ── Días críticos ─────────────────────────────────────────────────────────
-  const diasCriticos = base
-    .filter(r => Number(r.tiempo_espera) > 180)
-    .map(r => ({ fecha: r.fecha?.slice(0,10), estab: r.establecimiento, valor: Number(r.tiempo_espera), se: r.semana_epi }))
-    .sort((a,b) => b.valor - a.valor)
-    .slice(0, 20);
-
-  // ── KPIs generales ────────────────────────────────────────────────────────
-  const todos = base.map(r => Number(r.tiempo_espera));
-  const promGeneral  = Math.round(todos.reduce((a,b) => a+b,0) / todos.length);
-  const maxGeneral   = Math.max(...todos);
-  const estabMaximo  = dataEstab.find(e => e.maximo === maxGeneral)?.establecimiento || "";
-  const nAlerta      = dataEstab.filter(e => e.alerta).length;
-
-  // ── Tendencia últimas 8 SE ────────────────────────────────────────────────
-  const ultimas8 = dataSE.slice(-8);
-  const tendencia = ultimas8.length >= 2
-    ? ultimas8[ultimas8.length-1].promedio - ultimas8[0].promedio
-    : 0;
-
-  const btnStyle = (activo) => ({
-    padding: "5px 14px", borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: "pointer",
-    background: activo ? P.azul : P.azulLight, color: activo ? "#fff" : P.azulDark,
-    border: `1px solid ${activo ? P.azul : P.border}`,
-  });
-
-  return (
-    <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-      <div style={{ fontSize: 20, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>⏱️ Tiempos de Espera</div>
-      <div style={{ fontSize: 13, color: P.muted, marginBottom: 16 }}>Análisis por establecimiento, semana epidemiológica y día</div>
-
-      {/* Filtros propios */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, alignSelf: "center" }}>🔍 Filtros</div>
-
-        <div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: P.muted, marginBottom: 4, textTransform: "uppercase" }}>Polo</div>
-          <select value={tPolo} onChange={e => { setTPolo(e.target.value); setTEstab("Todos"); }} style={selStyle}>
-            <option value="Todos">Todos</option>
-            {["Polo Cerrillos Maipú","Polo Santiago Estación Central"].map(p => <option key={p}>{p}</option>)}
-          </select>
-        </div>
-
-        <div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: P.muted, marginBottom: 4, textTransform: "uppercase" }}>Establecimiento</div>
-          <select value={tEstab} onChange={e => setTEstab(e.target.value)} style={selStyle}>
-            <option value="Todos">Todos</option>
-            {establDisp
-              .filter(e => tPolo === "Todos" || getPolo(e) === tPolo)
-              .map(e => <option key={e}>{e}</option>)}
-          </select>
-        </div>
-
-        <div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: P.muted, marginBottom: 4, textTransform: "uppercase" }}>SE Desde</div>
-          <select value={tSEDesde} onChange={e => setTSEDesde(e.target.value)} style={{ ...selStyle, width: 90 }}>
-            <option value="">Todas</option>
-            {semanasDisp.map(se => <option key={se}>{se}</option>)}
-          </select>
-        </div>
-
-        <div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: P.muted, marginBottom: 4, textTransform: "uppercase" }}>SE Hasta</div>
-          <select value={tSEHasta} onChange={e => setTSEHasta(e.target.value)} style={{ ...selStyle, width: 90 }}>
-            <option value="">Todas</option>
-            {semanasDisp.map(se => <option key={se}>{se}</option>)}
-          </select>
-        </div>
-
-        <button onClick={() => { setTPolo("Todos"); setTEstab("Todos"); setTSEDesde(""); setTSEHasta(""); }}
-          style={{ padding: "6px 14px", borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: "pointer",
-            background: P.azulLight, color: P.azulDark, border: `1px solid ${P.border}` }}>
-          ✕ Limpiar
-        </button>
-
-        <div style={{ marginLeft: "auto", fontSize: 12, color: P.muted, alignSelf: "center" }}>
-          <b style={{ color: P.azulDark }}>{base.length}</b> registros con T° espera
-        </div>
-      </div>
-
-      {/* KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 24 }}>
-
-        {/* Promedio Red */}
-        <div style={{ background: promGeneral > 180 ? "#fdecea" : P.azulLight, borderRadius: 10, padding: "12px 16px", borderLeft: `4px solid ${promGeneral > 180 ? "#e74c3c" : P.azul}` }}>
-          <div style={{ fontSize: 11, color: P.muted, fontWeight: 600 }}>Promedio Red</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: promGeneral > 180 ? "#e74c3c" : P.azul }}>{promGeneral} min</div>
-          {promGeneral > 180 && <div style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700, marginTop: 2 }}>⚠️ Sobre umbral</div>}
-        </div>
-
-        {/* Máximo con establecimiento */}
-        <div style={{ background: maxGeneral > 180 ? "#fdecea" : P.azulLight, borderRadius: 10, padding: "12px 16px", borderLeft: `4px solid ${maxGeneral > 180 ? "#e74c3c" : P.amber}`, border: maxGeneral > 180 ? "1.5px solid #e74c3c" : undefined }}>
-          <div style={{ fontSize: 11, color: P.muted, fontWeight: 600 }}>Máximo registrado</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: maxGeneral > 180 ? "#e74c3c" : P.amber }}>{maxGeneral} min</div>
-          <div style={{ fontSize: 10, color: "#c0392b", fontWeight: 600, marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{estabMaximo}</div>
-          {maxGeneral > 180 && <div style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700, marginTop: 2 }}>⚠️ Sobre umbral</div>}
-        </div>
-
-        {/* Centros en alerta */}
-        <div style={{ background: nAlerta > 0 ? "#fdecea" : P.azulLight, borderRadius: 10, padding: "12px 16px", borderLeft: `4px solid ${nAlerta > 0 ? "#e74c3c" : P.verde}`, border: nAlerta > 0 ? "1.5px solid #e74c3c" : undefined }}>
-          <div style={{ fontSize: 11, color: P.muted, fontWeight: 600 }}>Centros en alerta</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: nAlerta > 0 ? "#e74c3c" : P.verde }}>{nAlerta} de {dataEstab.length}</div>
-          {nAlerta > 0 && <div style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700, marginTop: 2 }}>⚠️ Sobre umbral</div>}
-        </div>
-
-        {/* Tendencia */}
-        <div style={{ background: tendencia > 15 ? "#fdecea" : P.azulLight, borderRadius: 10, padding: "12px 16px", borderLeft: `4px solid ${tendencia > 15 ? "#e74c3c" : tendencia < -15 ? P.verde : P.amber}` }}>
-          <div style={{ fontSize: 11, color: P.muted, fontWeight: 600 }}>Tendencia (últ. 8 SE)</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: tendencia > 15 ? "#e74c3c" : tendencia < -15 ? P.verde : P.amber }}>
-            {tendencia === 0 ? "Estable" : `${tendencia > 0 ? "▲" : "▼"} ${Math.abs(tendencia)} min`}
-          </div>
-          {tendencia > 15 && <div style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700, marginTop: 2 }}>⚠️ Sobre umbral</div>}
-        </div>
-
-        {/* Selector SE actual */}
-        <div style={{ background: P.azulLight, borderRadius: 10, padding: "12px 16px", borderLeft: `4px solid ${P.azulMid}` }}>
-          <div style={{ fontSize: 11, color: P.muted, fontWeight: 600, marginBottom: 6 }}>Ver semana específica</div>
-          <select
-            value={tSEDesde === tSEHasta ? tSEDesde : ""}
-            onChange={e => { setTSEDesde(e.target.value); setTSEHasta(e.target.value); }}
-            style={{ width: "100%", background: "#fff", border: `1px solid ${P.border}`, borderRadius: 6, padding: "5px 8px", fontSize: 12, color: P.azulDark, fontWeight: 700 }}
-          >
-            <option value="">Todas las semanas</option>
-            {semanasDisp.map(se => <option key={se}>{se}</option>)}
-          </select>
-        </div>
-
-      </div>
-
-      {/* Por establecimiento */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Por Establecimiento</div>
-            <div style={{ fontSize: 11, color: P.muted }}>Comparación entre centros — umbral de alerta: 180 min</div>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button style={btnStyle(vistaEstab === "promedio")} onClick={() => setVistaEstab("promedio")}>Promedio</button>
-            <button style={btnStyle(vistaEstab === "rango")}   onClick={() => setVistaEstab("rango")}>Rango min/max</button>
-          </div>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 18 }}>
-          <ResponsiveContainer width="100%" height={Math.max(220, dataEstab.length * 38)}>
-            <BarChart data={dataEstab} layout="vertical" margin={{ top: 4, right: 50, left: 16, bottom: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={P.grisMid} horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={v => `${v}m`} />
-              <YAxis type="category" dataKey="establecimiento" width={148} tick={{ fontSize: 10 }} />
-              <Tooltip formatter={(v, n) => [`${v} min`, n === "promedio" ? "Promedio" : n === "maximo" ? "Máximo" : "Mínimo"]} />
-              <ReferenceLine x={180} stroke="#e74c3c" strokeDasharray="4 2"
-                label={{ value: "180 min", position: "top", fontSize: 10, fill: "#e74c3c" }} />
-              {vistaEstab === "promedio" ? (
-                <Bar dataKey="promedio" radius={[0,6,6,0]} barSize={20}>
-                  {dataEstab.map((d,i) => <Cell key={i} fill={d.promedio > 180 ? "#e74c3c" : P.azul} />)}
-                </Bar>
-              ) : (<>
-                <Bar dataKey="minimo"   fill={`${P.verde}90`} radius={[0,0,0,0]} barSize={10} stackId="a" />
-                <Bar dataKey="promedio" fill={`${P.azul}90`}  radius={[0,0,0,0]} barSize={10} stackId="a" />
-                <Bar dataKey="maximo"   fill={`${P.amber}90`} radius={[0,6,6,0]} barSize={10} stackId="a" />
-              </>)}
-            </BarChart>
-          </ResponsiveContainer>
-
-          {/* Tabla ranking */}
-          <div style={{ overflow: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 280 }}>
-              <thead>
-                <tr style={{ background: P.azulDark }}>
-                  {["#", "Establecimiento", "Prom.", "Mín.", "Máx.", "Días"].map(h => (
-                    <th key={h} style={{ padding: "8px 10px", color: "#fff", fontWeight: 700, textAlign: h === "Establecimiento" ? "left" : "right", whiteSpace: "nowrap" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {dataEstab.map((d, i) => (
-                  <tr key={d.establecimiento} style={{ background: d.alerta ? "#fdecea" : i % 2 === 0 ? "#fff" : P.bg }}>
-                    <td style={{ padding: "8px 10px", textAlign: "right", color: P.muted, fontWeight: 700 }}>{i+1}</td>
-                    <td style={{ padding: "8px 10px", fontWeight: 700, color: d.alerta ? "#e74c3c" : P.azulDark }}>
-                      {d.alerta && "⚠️ "}{d.establecimiento}
-                    </td>
-                    <td style={{ padding: "8px 10px", textAlign: "right", fontWeight: 800, color: d.alerta ? "#e74c3c" : P.azul }}>{d.promedio}</td>
-                    <td style={{ padding: "8px 10px", textAlign: "right", color: P.verde }}>{d.minimo}</td>
-                    <td style={{ padding: "8px 10px", textAlign: "right", color: P.amber }}>{d.maximo}</td>
-                    <td style={{ padding: "8px 10px", textAlign: "right", color: P.muted }}>{d.n}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* Por SE */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>Promedio de la Red por Semana Epidemiológica</div>
-        <div style={{ fontSize: 11, color: P.muted, marginBottom: 14 }}>Evolución semanal del tiempo de espera promedio</div>
-        <ResponsiveContainer width="100%" height={240}>
-          <ComposedChart data={dataSE} margin={{ top: 4, right: 24, left: 0, bottom: 4 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={P.grisMid} />
-            <XAxis dataKey="se" tick={{ fontSize: 10 }} interval={dataSE.length > 20 ? Math.floor(dataSE.length/8) : 0} angle={dataSE.length > 15 ? -30 : 0} textAnchor={dataSE.length > 15 ? "end" : "middle"} height={dataSE.length > 15 ? 45 : 25} />
-            <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v}m`} />
-            <Tooltip formatter={(v, n) => [`${v} min`, n === "promedio" ? "Promedio red" : n === "maximo" ? "Máximo" : "Mínimo"]} />
-            <ReferenceLine y={180} stroke="#e74c3c" strokeDasharray="4 2" label={{ value: "⚠️ 180 min", position: "right", fontSize: 10, fill: "#e74c3c" }} />
-            <Bar dataKey="promedio" radius={[4,4,0,0]} barSize={dataSE.length > 20 ? 6 : 14}>
-              {dataSE.map((d,i) => <Cell key={i} fill={d.promedio > 180 ? "#e74c3c" : P.azul} />)}
-            </Bar>
-            <Line type="monotone" dataKey="promedio" stroke={P.azul} strokeWidth={2} dot={false} />
-          </ComposedChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Por día */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>Promedio de la Red por Día</div>
-        <div style={{ fontSize: 11, color: P.muted, marginBottom: 14 }}>Evolución diaria del tiempo de espera — barras rojas superan 180 min</div>
-        <ResponsiveContainer width="100%" height={240}>
-          <ComposedChart data={dataDia} margin={{ top: 4, right: 24, left: 0, bottom: 4 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={P.grisMid} />
-            <XAxis dataKey="dia" tick={{ fontSize: 10 }} interval={dataDia.length > 20 ? Math.floor(dataDia.length/8) : 0} angle={dataDia.length > 15 ? -30 : 0} textAnchor={dataDia.length > 15 ? "end" : "middle"} height={dataDia.length > 15 ? 45 : 25} />
-            <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v}m`} />
-            <Tooltip formatter={v => [`${v} min`, "Promedio red"]} />
-            <ReferenceLine y={180} stroke="#e74c3c" strokeDasharray="4 2" label={{ value: "⚠️ 180 min", position: "right", fontSize: 10, fill: "#e74c3c" }} />
-            <Bar dataKey="promedio" radius={[3,3,0,0]} barSize={dataDia.length > 60 ? 3 : 8}>
-              {dataDia.map((d,i) => <Cell key={i} fill={d.promedio > 180 ? "#e74c3c" : `${P.azul}90`} />)}
-            </Bar>
-            <Line type="monotone" dataKey="promedio" stroke={P.azul} strokeWidth={2} dot={false} />
-          </ComposedChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Días críticos */}
-      {diasCriticos.length > 0 && (
-        <div style={{ background: "#fdecea", border: "1.5px solid #e74c3c", borderRadius: 8, padding: 18 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: "#c0392b", marginBottom: 4 }}>⚠️ Días Críticos (sobre 180 min)</div>
-          <div style={{ fontSize: 11, color: "#c0392b", marginBottom: 14 }}>Top 20 registros con mayor tiempo de espera según filtros aplicados</div>
-          <div style={{ overflow: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 340 }}>
-              <thead>
-                <tr style={{ background: "#e74c3c" }}>
-                  {["Fecha", "SE", "Establecimiento", "T° Espera"].map(h => (
-                    <th key={h} style={{ padding: "8px 12px", color: "#fff", fontWeight: 700, textAlign: h === "T° Espera" ? "right" : "left", whiteSpace: "nowrap" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {diasCriticos.map((d, i) => (
-                  <tr key={i} style={{ background: i % 2 === 0 ? "#fff5f5" : "#fff" }}>
-                    <td style={{ padding: "8px 12px", color: P.text }}>{d.fecha}</td>
-                    <td style={{ padding: "8px 12px", color: P.muted }}>{d.se}</td>
-                    <td style={{ padding: "8px 12px", fontWeight: 700, color: "#c0392b" }}>{d.estab}</td>
-                    <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 800, color: "#c0392b" }}>{d.valor} min</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
