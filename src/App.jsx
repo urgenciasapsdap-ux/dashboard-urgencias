@@ -5912,19 +5912,68 @@ export default function App() {
                 ) : <div style={{ color: P.muted, fontSize: 13, padding: 20 }}>Sin datos</div>}
               </div>
               <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 14, color: P.azulDark }}>Destino de Derivaciones</div>
-                {dataDerivaciones.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={210}>
-                    <PieChart>
-                      <Pie data={dataDerivaciones} cx="50%" cy="50%" outerRadius={78} dataKey="value"
-                        label={({ name, percent }) => `${(percent*100).toFixed(0)}%`}>
-                        {dataDerivaciones.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
-                      </Pie>
-                      <Tooltip contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 8 }} />
-                      <Legend wrapperStyle={{ fontSize: 11 }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : <div style={{ color: P.muted, fontSize: 13, padding: 20 }}>Sin datos con filtros seleccionados</div>}
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4, color: P.azulDark }}>Destino de Derivaciones</div>
+                <div style={{ fontSize: 11, color: P.muted, marginBottom: 14 }}>Total de derivaciones por hospital</div>
+                {dataDerivaciones.length > 0 ? (() => {
+                  const total = dataDerivaciones.reduce((a, d) => a + d.value, 0);
+                  const COLORS = ["#1A3A6B", "#C0392B", "#1A7A4A", "#B45309"];
+                  return (
+                    <div>
+                      {/* Donut chart */}
+                      <ResponsiveContainer width="100%" height={180}>
+                        <PieChart>
+                          <Pie
+                            data={dataDerivaciones}
+                            cx="50%" cy="50%"
+                            innerRadius={48} outerRadius={78}
+                            dataKey="value"
+                            paddingAngle={2}
+                            label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                              const RADIAN = Math.PI / 180;
+                              const radius = innerRadius + (outerRadius - innerRadius) * 1.35;
+                              const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                              const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                              return percent > 0.05 ? (
+                                <text x={x} y={y} fill={P.text} textAnchor={x > cx ? "start" : "end"} dominantBaseline="central" fontSize={11} fontWeight={700}>
+                                  {`${(percent*100).toFixed(0)}%`}
+                                </text>
+                              ) : null;
+                            }}
+                            labelLine={false}
+                          >
+                            {dataDerivaciones.map((_, i) => (
+                              <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="#fff" strokeWidth={2} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 8, fontSize: 12 }}
+                            formatter={(val, name) => [`${val} (${((val/total)*100).toFixed(1)}%)`, name]}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      {/* Leyenda manual con barras */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 4 }}>
+                        {dataDerivaciones.map((d, i) => {
+                          const pct = total > 0 ? ((d.value / total) * 100) : 0;
+                          return (
+                            <div key={d.name}>
+                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                                  <div style={{ width: 10, height: 10, borderRadius: 2, background: COLORS[i % COLORS.length], flexShrink: 0 }} />
+                                  <span style={{ fontSize: 11, fontWeight: 600, color: P.text }}>{d.name}</span>
+                                </div>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: COLORS[i % COLORS.length] }}>{d.value} · {pct.toFixed(1)}%</span>
+                              </div>
+                              <div style={{ height: 5, background: P.grisMid, borderRadius: 3, overflow: "hidden" }}>
+                                <div style={{ height: "100%", width: `${pct}%`, background: COLORS[i % COLORS.length], borderRadius: 3, transition: "width 0.4s" }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })() : <div style={{ color: P.muted, fontSize: 13, padding: 20 }}>Sin datos con filtros seleccionados</div>}
               </div>
             </div>
 
