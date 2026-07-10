@@ -4967,6 +4967,8 @@ export default function App() {
   const [cmpP2desde, setCmpP2desde] = useState("");
   const [cmpP2hasta, setCmpP2hasta] = useState("");
   const [mostrarComparador, setMostrarComparador] = useState(false);
+  const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
+  const [mostrarPDF, setMostrarPDF] = useState(false);
   const [filtroEstab, setFiltroEstab] = useState("Todos");
   const [filtroPolo, setFiltroPolo] = useState("Todos");
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -5536,19 +5538,30 @@ export default function App() {
               </div>
             </div>
           </div>
-          <button onClick={exportExcel} style={{
-            background: "transparent", color: "#fff",
-            border: "1.5px solid rgba(255,255,255,0.35)",
-            borderRadius: 6, padding: "6px 14px", cursor: "pointer",
-            fontSize: 12, fontWeight: 600,
-            display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
-          }}>
-            ↓ Exportar Excel
-          </button>
+          <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+            <button onClick={exportExcel} style={{
+              background: "transparent", color: "#fff",
+              border: "1.5px solid rgba(255,255,255,0.35)",
+              borderRadius: 6, padding: "6px 14px", cursor: "pointer",
+              fontSize: 12, fontWeight: 600,
+              display: "flex", alignItems: "center", gap: 5,
+            }}>
+              ↓ Excel
+            </button>
+            <button onClick={() => setMostrarPDF(true)} style={{
+              background: P.rojo, color: "#fff",
+              border: "none",
+              borderRadius: 6, padding: "6px 14px", cursor: "pointer",
+              fontSize: 12, fontWeight: 600,
+              display: "flex", alignItems: "center", gap: 5,
+            }}>
+              ↓ PDF
+            </button>
+          </div>
         </div>
 
-        {/* Nav Tabs */}
-        <div style={{ display: "flex", paddingLeft: 16, overflowX: "auto" }}>
+        {/* Nav Tabs — desktop */}
+        <div style={{ display: "flex", paddingLeft: 16, overflowX: "auto" }} className="nav-desktop">
           {[
             { id: "dashboard",    label: "Resumen" },
             { id: "formulario",   label: "Ingresar" },
@@ -5568,6 +5581,44 @@ export default function App() {
               transition: "all 0.15s", whiteSpace: "nowrap",
             }}>{t.label}</button>
           ))}
+        </div>
+
+        {/* Nav móvil — hamburguesa */}
+        <div style={{ display: "none" }} className="nav-mobile">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 16px" }}>
+            <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
+              {[
+                { id: "dashboard", label: "Resumen" }, { id: "formulario", label: "Ingresar" },
+                { id: "tabla", label: "Tabla" }, { id: "ambulancias", label: "Ambulancias" },
+                { id: "importar", label: "Importar" }, { id: "tiempos", label: "T° Espera" },
+                { id: "proyecciones", label: "Proyecciones" },
+              ].find(t => t.id === tab)?.label || "Menú"}
+            </span>
+            <button onClick={() => setMenuMovilAbierto(v => !v)} style={{
+              background: "rgba(255,255,255,0.15)", border: "none", borderRadius: 6,
+              color: "#fff", padding: "6px 12px", cursor: "pointer", fontSize: 16, fontWeight: 700
+            }}>
+              {menuMovilAbierto ? "✕" : "☰"}
+            </button>
+          </div>
+          {menuMovilAbierto && (
+            <div style={{ background: P.azulDark, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+              {[
+                { id: "dashboard", label: "📊 Resumen" }, { id: "formulario", label: "➕ Ingresar" },
+                { id: "tabla", label: "📋 Tabla" }, { id: "ambulancias", label: "🚑 Ambulancias" },
+                { id: "importar", label: "📥 Importar" }, { id: "tiempos", label: "⏱️ T° Espera" },
+                { id: "proyecciones", label: "📈 Proyecciones" },
+              ].map(t => (
+                <button key={t.id} onClick={() => { setTab(t.id); setMenuMovilAbierto(false); }} style={{
+                  display: "block", width: "100%", textAlign: "left",
+                  background: tab === t.id ? "rgba(192,57,43,0.3)" : "transparent",
+                  color: tab === t.id ? "#fff" : "rgba(255,255,255,0.7)",
+                  border: "none", borderLeft: tab === t.id ? `3px solid ${P.rojo}` : "3px solid transparent",
+                  padding: "12px 20px", cursor: "pointer", fontSize: 13, fontWeight: tab === t.id ? 700 : 400,
+                }}>{t.label}</button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -5797,7 +5848,99 @@ export default function App() {
               )}
             </div>
 
-                        {/* Gráfico comportamiento diario — ancho completo */}
+                        {/* ── ALERTA TIEMPO DE ESPERA ─────────────────── */}
+            {Number(kpiData.promEspera) > 180 && (
+              <div style={{
+                background: "#fdecea", border: "2px solid #e74c3c", borderRadius: 8,
+                padding: "14px 20px", marginBottom: 14,
+                display: "flex", alignItems: "center", gap: 14,
+              }}>
+                <div style={{ fontSize: 28, flexShrink: 0 }}>🚨</div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#c0392b" }}>
+                    Alerta: Tiempo de Espera Promedio Superó el Umbral
+                  </div>
+                  <div style={{ fontSize: 12, color: "#922b21", marginTop: 2 }}>
+                    El promedio de la red es <b>{kpiData.promEspera} min</b>, superando el umbral de <b>180 min</b>. Se recomienda revisar la distribución de atenciones y refuerzos.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── REFUERZOS POR ESTABLECIMIENTO ────────────────── */}
+            {(() => {
+              const ESTAMENTOS = [
+                { key: "refuerzo_medico",         label: "Médico",         color: "#1A3A6B" },
+                { key: "refuerzo_enfermera",       label: "Enfermera",      color: "#C0392B" },
+                { key: "refuerzo_tens",            label: "TENS",           color: "#1A7A4A" },
+                { key: "refuerzo_kinesiologo",     label: "Kinesiólogo",    color: "#B45309" },
+                { key: "refuerzo_administrativo",  label: "Administrativo", color: "#6B3FA0" },
+              ];
+
+              const conRefuerzo = filtrados.filter(r => r.tiene_refuerzo);
+              if (conRefuerzo.length === 0) return null;
+
+              // Por establecimiento: qué estamentos tienen refuerzo activo
+              const porEstab = {};
+              conRefuerzo.forEach(r => {
+                const e = r.establecimiento;
+                if (!porEstab[e]) porEstab[e] = { dias: 0, estamentos: {} };
+                porEstab[e].dias++;
+                ESTAMENTOS.forEach(({ key, label }) => {
+                  if (r[key]) {
+                    porEstab[e].estamentos[label] = (porEstab[e].estamentos[label] || 0) + 1;
+                  }
+                });
+              });
+
+              return (
+                <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 14 }}>
+                  <div style={{ marginBottom: 14 }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>⚡ Refuerzos por Establecimiento</div>
+                    <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Días con refuerzo y estamentos activos según filtros aplicados</div>
+                  </div>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 500 }}>
+                      <thead>
+                        <tr style={{ background: P.azulDark }}>
+                          <th style={{ padding: "9px 12px", color: "#fff", fontWeight: 700, textAlign: "left" }}>Establecimiento</th>
+                          <th style={{ padding: "9px 12px", color: "#fff", fontWeight: 700, textAlign: "center" }}>Días c/Refuerzo</th>
+                          {ESTAMENTOS.map(e => (
+                            <th key={e.key} style={{ padding: "9px 10px", color: "#fff", fontWeight: 700, textAlign: "center", whiteSpace: "nowrap" }}>
+                              {e.label}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(porEstab).sort((a,b) => b[1].dias - a[1].dias).map(([estab, data], i) => (
+                          <tr key={estab} style={{ background: i % 2 === 0 ? "#fff" : P.azulLight }}>
+                            <td style={{ padding: "9px 12px", fontWeight: 700, color: P.azulDark, borderBottom: `1px solid ${P.border}` }}>{estab}</td>
+                            <td style={{ padding: "9px 12px", textAlign: "center", fontWeight: 800, color: P.azul, borderBottom: `1px solid ${P.border}` }}>{data.dias}</td>
+                            {ESTAMENTOS.map(({ label, color }) => {
+                              const dias = data.estamentos[label] || 0;
+                              return (
+                                <td key={label} style={{ padding: "9px 10px", textAlign: "center", borderBottom: `1px solid ${P.border}` }}>
+                                  {dias > 0 ? (
+                                    <span style={{ background: color, color: "#fff", borderRadius: 20, padding: "3px 10px", fontWeight: 700, fontSize: 11 }}>
+                                      {dias}d
+                                    </span>
+                                  ) : (
+                                    <span style={{ color: P.grisMid, fontSize: 12 }}>—</span>
+                                  )}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Gráfico comportamiento diario — ancho completo */}
             <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 14 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                 <div>
@@ -6467,6 +6610,16 @@ export default function App() {
           />
         )}
 
+      {/* ── PDF MODAL ─────────────────────────────────────── */}
+      {mostrarPDF && (
+        <ModalPDF
+          registros={registros}
+          registrosAmbulancias={registrosAmbulancias}
+          onClose={() => setMostrarPDF(false)}
+          P={P} POLO_MAP={POLO_MAP} getPolo={getPolo}
+        />
+      )}
+
       <style>{`
   @keyframes fadeIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
   * { box-sizing: border-box; }
@@ -6476,6 +6629,19 @@ export default function App() {
   ::-webkit-scrollbar-track { background: #F4F6FA; }
   ::-webkit-scrollbar-thumb { background: #C2D0E4; border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: #1A3A6B; }
+  @media (max-width: 640px) {
+    .nav-desktop { display: none !important; }
+    .nav-mobile  { display: block !important; }
+  }
+  @media (min-width: 641px) {
+    .nav-desktop { display: flex !important; }
+    .nav-mobile  { display: none !important; }
+  }
+  @media print {
+    body * { visibility: hidden; }
+    #pdf-preview, #pdf-preview * { visibility: visible; }
+    #pdf-preview { position: absolute; top: 0; left: 0; width: 100%; }
+  }
 `}</style>
     </div>
   );
@@ -7283,6 +7449,318 @@ function TabTiemposEspera({ registros, P, inpS }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Modal PDF ─────────────────────────────────────────────────────────────────
+function ModalPDF({ registros, registrosAmbulancias, onClose, P, POLO_MAP, getPolo }) {
+  const [pdfPolo,   setPdfPolo]   = React.useState("Todos");
+  const [pdfEstab,  setPdfEstab]  = React.useState("Todos");
+  const [pdfSEDesde, setPdfSEDesde] = React.useState("");
+  const [pdfSEHasta, setPdfSEHasta] = React.useState("");
+  const [secciones, setSecciones] = React.useState({
+    kpis: true, absorcion: true, refuerzos: true,
+    respiratorias: true, ambulancias: true, tabla: true,
+  });
+
+  const semanasDisp = [...new Set(registros.map(r => r.semana_epi).filter(Boolean))].sort();
+  const establDisp  = [...new Set(registros.map(r => r.establecimiento).filter(Boolean))].sort();
+
+  const base = registros.filter(r =>
+    (pdfPolo  === "Todos" || getPolo(r.establecimiento) === pdfPolo) &&
+    (pdfEstab === "Todos" || r.establecimiento === pdfEstab) &&
+    (!pdfSEDesde || r.semana_epi >= pdfSEDesde) &&
+    (!pdfSEHasta || r.semana_epi <= pdfSEHasta)
+  );
+
+  const tot = base.reduce((a, r) => ({
+    demanda:    a.demanda    + Number(r.demanda_total || 0),
+    atendidos:  a.atendidos  + Number(r.pacientes_atendidos || 0),
+    resp:       a.resp       + Number(r.atenciones_respiratorias || 0),
+    abandonos:  a.abandonos  + Number(r.abandonos || 0),
+  }), { demanda: 0, atendidos: 0, resp: 0, abandonos: 0 });
+
+  const conEspera   = base.filter(r => r.tiempo_espera != null && r.tiempo_espera !== "");
+  const promEspera  = conEspera.length ? Math.round(conEspera.reduce((a,r) => a + Number(r.tiempo_espera),0) / conEspera.length) : 0;
+  const tasaAbandono = tot.demanda ? ((tot.abandonos / tot.demanda)*100).toFixed(1) : 0;
+  const pctResp      = tot.atendidos ? ((tot.resp / tot.atendidos)*100).toFixed(1) : 0;
+
+  // Absorción
+  const totalRed = base.reduce((a,r) => a + Number(r.demanda_total||0), 0);
+  const absorMap = {};
+  base.forEach(r => {
+    const e = r.establecimiento;
+    if (!absorMap[e]) absorMap[e] = { demanda: 0, atendidos: 0 };
+    absorMap[e].demanda   += Number(r.demanda_total||0);
+    absorMap[e].atendidos += Number(r.pacientes_atendidos||0);
+  });
+  const absorData = Object.entries(absorMap)
+    .map(([e,d]) => ({ estab: e, demanda: d.demanda, atendidos: d.atendidos, pct: totalRed ? ((d.demanda/totalRed)*100).toFixed(1) : 0 }))
+    .sort((a,b) => b.demanda - a.demanda);
+
+  // Refuerzos
+  const ESTAMENTOS = ["Médico","Enfermera","TENS","Kinesiólogo","Administrativo"];
+  const KEYS = ["refuerzo_medico","refuerzo_enfermera","refuerzo_tens","refuerzo_kinesiologo","refuerzo_administrativo"];
+  const refMap = {};
+  base.filter(r => r.tiene_refuerzo).forEach(r => {
+    const e = r.establecimiento;
+    if (!refMap[e]) refMap[e] = { dias: 0, est: {} };
+    refMap[e].dias++;
+    KEYS.forEach((k,i) => { if (r[k]) refMap[e].est[ESTAMENTOS[i]] = (refMap[e].est[ESTAMENTOS[i]]||0)+1; });
+  });
+
+  const handlePrint = () => window.print();
+
+  const selStyle = {
+    background: "#fff", border: `1px solid ${P.border}`, borderRadius: 6,
+    padding: "6px 10px", fontSize: 12, color: P.text,
+  };
+
+  const titulo = `Reporte Urgencias APS SSMC${pdfEstab !== "Todos" ? ` — ${pdfEstab}` : pdfPolo !== "Todos" ? ` — ${pdfPolo}` : ""}`;
+  const periodo = pdfSEDesde || pdfSEHasta ? `${pdfSEDesde || "Inicio"} → ${pdfSEHasta || "Fin"}` : "Período completo";
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 1000, display: "flex", alignItems: "flex-start", justifyContent: "center", overflowY: "auto", padding: "20px 0" }}>
+      <div style={{ background: "#fff", borderRadius: 10, width: "min(780px, 95vw)", margin: "auto" }}>
+
+        {/* Header modal */}
+        <div style={{ background: P.azul, padding: "16px 24px", borderRadius: "10px 10px 0 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ color: "#fff", fontWeight: 700, fontSize: 15 }}>📄 Exportar Reporte PDF</div>
+          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 6, color: "#fff", padding: "4px 10px", cursor: "pointer", fontSize: 16 }}>✕</button>
+        </div>
+
+        <div style={{ padding: "20px 24px" }}>
+          {/* Filtros */}
+          <div style={{ background: P.azulLight, borderRadius: 8, padding: "14px 16px", marginBottom: 20 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, marginBottom: 12 }}>Filtros del reporte</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, color: P.muted, fontWeight: 600, marginBottom: 4 }}>Polo</div>
+                <select value={pdfPolo} onChange={e => { setPdfPolo(e.target.value); setPdfEstab("Todos"); }} style={selStyle}>
+                  <option value="Todos">Todos</option>
+                  {["Polo Cerrillos Maipú","Polo Santiago Estación Central"].map(p => <option key={p}>{p}</option>)}
+                </select>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: P.muted, fontWeight: 600, marginBottom: 4 }}>Establecimiento</div>
+                <select value={pdfEstab} onChange={e => setPdfEstab(e.target.value)} style={selStyle}>
+                  <option value="Todos">Todos</option>
+                  {establDisp.filter(e => pdfPolo === "Todos" || getPolo(e) === pdfPolo).map(e => <option key={e}>{e}</option>)}
+                </select>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: P.muted, fontWeight: 600, marginBottom: 4 }}>SE Desde</div>
+                <select value={pdfSEDesde} onChange={e => setPdfSEDesde(e.target.value)} style={selStyle}>
+                  <option value="">Inicio</option>
+                  {semanasDisp.map(se => <option key={se}>{se}</option>)}
+                </select>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: P.muted, fontWeight: 600, marginBottom: 4 }}>SE Hasta</div>
+                <select value={pdfSEHasta} onChange={e => setPdfSEHasta(e.target.value)} style={selStyle}>
+                  <option value="">Fin</option>
+                  {semanasDisp.map(se => <option key={se}>{se}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Secciones seleccionables */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, marginBottom: 10 }}>Secciones a incluir</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 8 }}>
+              {[
+                { key: "kpis",          label: "📊 KPIs generales" },
+                { key: "absorcion",     label: "🏥 Absorción por establecimiento" },
+                { key: "refuerzos",     label: "⚡ Refuerzos" },
+                { key: "respiratorias", label: "🫁 Atenciones respiratorias" },
+                { key: "ambulancias",   label: "🚑 Retenciones ambulancias" },
+                { key: "tabla",         label: "📋 Tabla de registros" },
+              ].map(({ key, label }) => (
+                <label key={key} style={{
+                  display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
+                  background: secciones[key] ? P.azulLight : "#f9fafb",
+                  border: `1px solid ${secciones[key] ? P.azul : P.border}`,
+                  borderRadius: 6, padding: "8px 12px", fontSize: 12, fontWeight: secciones[key] ? 700 : 400,
+                  color: secciones[key] ? P.azulDark : P.muted,
+                }}>
+                  <input type="checkbox" checked={secciones[key]}
+                    onChange={() => setSecciones(s => ({ ...s, [key]: !s[key] }))}
+                    style={{ accentColor: P.azul, width: 14, height: 14 }}
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Preview del reporte */}
+          <div id="pdf-preview" style={{ border: `1px solid ${P.border}`, borderRadius: 8, padding: 20, background: "#fff", fontSize: 11 }}>
+            {/* Encabezado */}
+            <div style={{ borderBottom: `3px solid ${P.azul}`, paddingBottom: 10, marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: P.azul }}>{titulo}</div>
+                <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Servicio de Salud Metropolitano Central · {periodo}</div>
+              </div>
+              <div style={{ fontSize: 10, color: P.muted, textAlign: "right" }}>
+                Generado: {new Date().toLocaleDateString("es-CL")}<br/>
+                {base.length} registros
+              </div>
+            </div>
+
+            {/* KPIs */}
+            {secciones.kpis && (
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.5px" }}>Indicadores Generales</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+                  {[
+                    { label: "Demanda Total",    val: tot.demanda.toLocaleString("es-CL"),   color: P.azul },
+                    { label: "Atendidos",        val: tot.atendidos.toLocaleString("es-CL"), color: P.verde },
+                    { label: "Tasa Abandono",    val: `${tasaAbandono}%`,                    color: "#C0392B" },
+                    { label: "% Respiratorio",   val: `${pctResp}%`,                         color: "#B45309" },
+                    { label: "Abandonos",        val: tot.abandonos.toLocaleString("es-CL"), color: "#C0392B" },
+                    { label: "Respiratorias",    val: tot.resp.toLocaleString("es-CL"),       color: "#B45309" },
+                    { label: "T° Espera Prom.",  val: `${promEspera} min`,                   color: promEspera > 180 ? "#C0392B" : P.azul },
+                    { label: "N° Semanas",       val: [...new Set(base.map(r=>r.semana_epi).filter(Boolean))].length, color: P.muted },
+                  ].map(({ label, val, color }) => (
+                    <div key={label} style={{ background: P.azulLight, borderRadius: 6, padding: "8px 10px", borderLeft: `3px solid ${color}` }}>
+                      <div style={{ fontSize: 9, color: P.muted, fontWeight: 600 }}>{label}</div>
+                      <div style={{ fontSize: 14, fontWeight: 800, color }}>{val}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Absorción */}
+            {secciones.absorcion && absorData.length > 0 && (
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.5px" }}>Absorción por Establecimiento</div>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 10 }}>
+                  <thead>
+                    <tr style={{ background: P.azul }}>
+                      {["Establecimiento","Demanda","% Red","Atendidos"].map(h => (
+                        <th key={h} style={{ padding: "6px 8px", color: "#fff", textAlign: h === "Establecimiento" ? "left" : "right", fontWeight: 700 }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {absorData.map((r,i) => (
+                      <tr key={r.estab} style={{ background: i%2===0?"#fff":P.azulLight }}>
+                        <td style={{ padding: "5px 8px", fontWeight: 600 }}>{r.estab}</td>
+                        <td style={{ padding: "5px 8px", textAlign: "right", color: P.azul, fontWeight: 700 }}>{r.demanda.toLocaleString("es-CL")}</td>
+                        <td style={{ padding: "5px 8px", textAlign: "right", fontWeight: 700 }}>{r.pct}%</td>
+                        <td style={{ padding: "5px 8px", textAlign: "right", color: P.verde, fontWeight: 700 }}>{r.atendidos.toLocaleString("es-CL")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Refuerzos */}
+            {secciones.refuerzos && Object.keys(refMap).length > 0 && (
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.5px" }}>Refuerzos por Establecimiento</div>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 10 }}>
+                  <thead>
+                    <tr style={{ background: P.azul }}>
+                      <th style={{ padding: "6px 8px", color: "#fff", textAlign: "left", fontWeight: 700 }}>Establecimiento</th>
+                      <th style={{ padding: "6px 8px", color: "#fff", textAlign: "center", fontWeight: 700 }}>Días</th>
+                      {ESTAMENTOS.map(e => <th key={e} style={{ padding: "6px 8px", color: "#fff", textAlign: "center", fontWeight: 700 }}>{e}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(refMap).sort((a,b)=>b[1].dias-a[1].dias).map(([estab,data],i) => (
+                      <tr key={estab} style={{ background: i%2===0?"#fff":P.azulLight }}>
+                        <td style={{ padding: "5px 8px", fontWeight: 600 }}>{estab}</td>
+                        <td style={{ padding: "5px 8px", textAlign: "center", fontWeight: 700, color: P.azul }}>{data.dias}</td>
+                        {ESTAMENTOS.map(e => <td key={e} style={{ padding: "5px 8px", textAlign: "center" }}>{data.est[e] ? `${data.est[e]}d` : "—"}</td>)}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Ambulancias */}
+            {secciones.ambulancias && registrosAmbulancias.length > 0 && (
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.5px" }}>Retenciones de Ambulancias</div>
+                {(() => {
+                  const ambBase = registrosAmbulancias.filter(r =>
+                    (pdfEstab === "Todos" || r.establecimiento === pdfEstab) &&
+                    (pdfPolo === "Todos" || getPolo(r.establecimiento) === pdfPolo)
+                  );
+                  const tiempos = ambBase.filter(r=>r.tiempo_retencion!=null).map(r=>Number(r.tiempo_retencion));
+                  return (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+                      {[
+                        { label: "Total retenciones", val: ambBase.length, color: P.azul },
+                        { label: "Tiempo promedio", val: tiempos.length ? `${Math.round(tiempos.reduce((a,b)=>a+b,0)/tiempos.length)} min` : "—", color: "#B45309" },
+                        { label: "Tiempo máximo", val: tiempos.length ? `${Math.max(...tiempos)} min` : "—", color: "#C0392B" },
+                      ].map(({ label, val, color }) => (
+                        <div key={label} style={{ background: P.azulLight, borderRadius: 6, padding: "8px 10px", borderLeft: `3px solid ${color}` }}>
+                          <div style={{ fontSize: 9, color: P.muted }}>{label}</div>
+                          <div style={{ fontSize: 14, fontWeight: 800, color }}>{val}</div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* Tabla */}
+            {secciones.tabla && base.length > 0 && (
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.5px" }}>Registros ({Math.min(base.length,50)} de {base.length})</div>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 9 }}>
+                  <thead>
+                    <tr style={{ background: P.azul }}>
+                      {["Fecha","SE","Establecimiento","Demanda","Atendidos","Resp.","Abandon.","T° Esp."].map(h => (
+                        <th key={h} style={{ padding: "5px 6px", color: "#fff", fontWeight: 700, textAlign: h==="Establecimiento"?"left":"right" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {base.slice(0,50).map((r,i) => (
+                      <tr key={r.id||i} style={{ background: i%2===0?"#fff":P.azulLight }}>
+                        <td style={{ padding: "4px 6px" }}>{r.fecha}</td>
+                        <td style={{ padding: "4px 6px" }}>{r.semana_epi}</td>
+                        <td style={{ padding: "4px 6px", fontWeight: 600 }}>{r.establecimiento}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right" }}>{r.demanda_total}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", color: P.verde }}>{r.pacientes_atendidos}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", color: "#B45309" }}>{r.atenciones_respiratorias}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", color: "#C0392B" }}>{r.abandonos}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right" }}>{r.tiempo_espera ? `${r.tiempo_espera}m` : "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {base.length > 50 && <div style={{ fontSize: 10, color: P.muted, marginTop: 4 }}>* Se muestran los primeros 50 registros en el reporte</div>}
+              </div>
+            )}
+
+            {/* Pie de página */}
+            <div style={{ borderTop: `1px solid ${P.border}`, paddingTop: 8, marginTop: 14, display: "flex", justifyContent: "space-between", fontSize: 9, color: P.muted }}>
+              <span>Servicio de Salud Metropolitano Central — Urgencias APS</span>
+              <span>Generado el {new Date().toLocaleDateString("es-CL")} — Dashboard Urgencias SSMC</span>
+            </div>
+          </div>
+
+          {/* Botones */}
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 16 }}>
+            <button onClick={onClose} style={{ padding: "8px 20px", borderRadius: 6, border: `1px solid ${P.border}`, background: "#fff", color: P.text, cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+              Cancelar
+            </button>
+            <button onClick={handlePrint} style={{ padding: "8px 24px", borderRadius: 6, border: "none", background: P.rojo, color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700 }}>
+              🖨️ Imprimir / Guardar PDF
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
