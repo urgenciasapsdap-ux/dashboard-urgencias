@@ -5902,11 +5902,11 @@ export default function App() {
                             <td style={{ padding: "8px 12px", fontWeight: 700, color: P.azulDark, borderBottom: `1px solid ${P.border}` }}>{estab}</td>
                             <td style={{ padding: "8px 10px", textAlign: "center", fontWeight: 800, color: P.azul, borderBottom: `1px solid ${P.border}` }}>{data.dias}</td>
                             {ESTAMENTOS.map(({ label, color }) => {
-                              const dias = data.est[label] || 0;
+                              const tiene = (data.est[label] || 0) > 0;
                               return (
                                 <td key={label} style={{ padding: "8px 10px", textAlign: "center", borderBottom: `1px solid ${P.border}` }}>
-                                  {dias > 0
-                                    ? <span style={{ background: color, color: "#fff", borderRadius: 20, padding: "3px 10px", fontWeight: 700, fontSize: 11 }}>{dias}d</span>
+                                  {tiene
+                                    ? <span style={{ background: color, color: "#fff", borderRadius: 20, padding: "3px 12px", fontWeight: 700, fontSize: 13 }}>✓</span>
                                     : <span style={{ color: P.grisMid }}>—</span>
                                   }
                                 </td>
