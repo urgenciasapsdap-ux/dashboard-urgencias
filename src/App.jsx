@@ -5272,32 +5272,39 @@ export default function App() {
       const filasDatos  = filaFechas + 2;
       const fechasFila  = raw[filaFechas] || [];
 
-      // Mapear columna → fecha, detectando cuántas columnas tiene cada bloque
+      // Mapear columna → fecha usando headers relativos (máx 8 cols por bloque)
+      // Estrategia: para cada fecha, buscar campos por nombre en las siguientes cols
+      // pero deteniéndose al encontrar la próxima fecha o "TOTAL DEMANDA" repetido
       const headersFila = raw[filaHeaders] || [];
       const bloques = [];
       for (let c = 1; c < fechasFila.length; c++) {
         const fecha = toISO(fechasFila[c]);
         if (!fecha) continue;
-        // Contar columnas del bloque: hasta la próxima fecha o fin
-        let cols = 1;
-        for (let cc = c+1; cc < fechasFila.length; cc++) {
-          if (toISO(fechasFila[cc])) break;
-          cols++;
-        }
-        // Mapear headers del bloque para saber qué columna es qué
+
+        // Buscar solo hasta la próxima fecha real (máx 8 cols)
         const hdrMap = {};
-        for (let i = 0; i < cols; i++) {
+        let demandaVisto = false;
+        for (let i = 0; i < 8; i++) {
+          // Si hay una fecha en la siguiente columna de datos, parar
+          if (i > 0 && toISO(fechasFila[c+i])) break;
           const h = String(headersFila[c+i] || "").toUpperCase().trim();
-          if (h.includes("DEMANDA"))          hdrMap.demanda   = i;
-          if (h.includes("ATENCIONES TOTAL")) hdrMap.atendidos = i;
-          if (h.includes("RESP"))             hdrMap.resp      = i;
-          if (h.includes("ESPERA"))           hdrMap.espera    = i;
-          if (h.includes("ABANDONO"))         hdrMap.abandonos = i;
-          if (h.includes("HEC"))              hdrMap.hec       = i;
-          if (h.includes("HUAP"))             hdrMap.huap      = i;
-          if (h.includes("HCSBA"))            hdrMap.hcsba     = i;
+          if (!h) continue;
+          // Si vemos TOTAL DEMANDA por segunda vez, es el bloque siguiente
+          if (h.includes("TOTAL DEMANDA") || h === "DEMANDA") {
+            if (demandaVisto) break;
+            demandaVisto = true;
+            hdrMap.demanda = i;
+          } else if (h.includes("ATENCIONES TOT")) { hdrMap.atendidos = i; }
+          else if (h.includes("RESP"))              { hdrMap.resp      = i; }
+          else if (h.includes("ESPERA"))            { hdrMap.espera    = i; }
+          else if (h.includes("ABANDONO"))          { hdrMap.abandonos = i; }
+          else if (h.includes("HEC"))               { hdrMap.hec       = i; }
+          else if (h.includes("HUAP"))              { hdrMap.huap      = i; }
+          else if (h.includes("HCSBA"))             { hdrMap.hcsba     = i; }
         }
-        bloques.push({ col: c, fecha, hdrMap });
+        if (hdrMap.demanda !== undefined) {
+          bloques.push({ col: c, fecha, hdrMap });
+        }
       }
 
       if (bloques.length === 0) throw new Error("No se pudieron leer las fechas. Verifica el formato del archivo.");
@@ -5325,7 +5332,7 @@ export default function App() {
           const huap      = n(fila, c, hdrMap.huap);
           const hcsba     = n(fila, c, hdrMap.hcsba);
 
-          if ((demanda === null) && (atendidos === null)) continue;
+          if (demanda === null && atendidos === null) continue;
 
           registrosNuevos.push({
             fecha,
