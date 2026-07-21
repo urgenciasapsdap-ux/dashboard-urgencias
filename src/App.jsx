@@ -5348,25 +5348,25 @@ export default function App() {
         return;
       }
 
-      // Obtener fechas y establecimientos ya existentes en Supabase
+      // Verificar duplicados en lotes de 50 fechas para no saturar Supabase
       const fechasUnicas = [...new Set(registrosNuevos.map(r => r.fecha))];
-      const { data: existentes } = await supabase
-        .from("registros")
-        .select("fecha, establecimiento")
-        .in("fecha", fechasUnicas);
-
-      const claveExistente = new Set(
-        (existentes || []).map(r => `${r.fecha}__${r.establecimiento}`)
-      );
+      const claveExistente = new Set();
+      for (let i = 0; i < fechasUnicas.length; i += 50) {
+        const lote = fechasUnicas.slice(i, i + 50);
+        const { data: existentes } = await supabase
+          .from("registros")
+          .select("fecha, establecimiento")
+          .in("fecha", lote);
+        (existentes || []).forEach(r => claveExistente.add(`${r.fecha}__${r.establecimiento}`));
+      }
 
       const soloNuevos = registrosNuevos.filter(r =>
         !claveExistente.has(`${r.fecha}__${r.establecimiento}`)
       );
-
       const duplicados = registrosNuevos.length - soloNuevos.length;
 
       if (soloNuevos.length === 0) {
-        setImportResultado({ ok: false, msg: `⚠️ Todos los registros del archivo ya existen en la base de datos (${duplicados} duplicados omitidos). No se cargó nada nuevo.` });
+        setImportResultado({ ok: false, msg: `⚠️ Todos los registros ya existen en la base de datos (${duplicados} duplicados omitidos). No se cargó nada nuevo.` });
         return;
       }
 
