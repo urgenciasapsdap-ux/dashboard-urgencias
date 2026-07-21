@@ -5015,11 +5015,11 @@ export default function App() {
   const estabs  = useMemo(() => ["Todos", ...new Set(registros.map(r => r.establecimiento))], [registros]);
   const POLOS   = ["Todos", "Polo Cerrillos Maipú", "Polo Santiago Estación Central"];
 
-  // Centros con ingreso de datos pendiente — últimas 3 semanas epidemiológicas
+  // Centros con ingreso de datos pendiente — últimas 5 semanas epidemiológicas
   const seActualDashboard = useMemo(() => getEpiWeek(_hoyStr), [_hoyStr]);
   const ultimasSEDashboard = useMemo(() => {
     const out = [];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 5; i++) {
       const d = new Date(_hoy);
       d.setDate(d.getDate() - i * 7);
       const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -5272,14 +5272,41 @@ export default function App() {
       const filasDatos  = filaFechas + 2;
       const fechasFila  = raw[filaFechas] || [];
 
-      // Mapear columna → fecha (solo columnas con fecha válida)
+      // Mapear columna → fecha, detectando cuántas columnas tiene cada bloque
+      const headersFila = raw[filaHeaders] || [];
       const bloques = [];
       for (let c = 1; c < fechasFila.length; c++) {
         const fecha = toISO(fechasFila[c]);
-        if (fecha) bloques.push({ col: c, fecha });
+        if (!fecha) continue;
+        // Contar columnas del bloque: hasta la próxima fecha o fin
+        let cols = 1;
+        for (let cc = c+1; cc < fechasFila.length; cc++) {
+          if (toISO(fechasFila[cc])) break;
+          cols++;
+        }
+        // Mapear headers del bloque para saber qué columna es qué
+        const hdrMap = {};
+        for (let i = 0; i < cols; i++) {
+          const h = String(headersFila[c+i] || "").toUpperCase().trim();
+          if (h.includes("DEMANDA"))          hdrMap.demanda   = i;
+          if (h.includes("ATENCIONES TOTAL")) hdrMap.atendidos = i;
+          if (h.includes("RESP"))             hdrMap.resp      = i;
+          if (h.includes("ESPERA"))           hdrMap.espera    = i;
+          if (h.includes("ABANDONO"))         hdrMap.abandonos = i;
+          if (h.includes("HEC"))              hdrMap.hec       = i;
+          if (h.includes("HUAP"))             hdrMap.huap      = i;
+          if (h.includes("HCSBA"))            hdrMap.hcsba     = i;
+        }
+        bloques.push({ col: c, fecha, hdrMap });
       }
 
       if (bloques.length === 0) throw new Error("No se pudieron leer las fechas. Verifica el formato del archivo.");
+
+      const n = (fila, c, idx) => {
+        if (idx === undefined) return null;
+        const v = fila[c + idx];
+        return v != null && !isNaN(Number(v)) ? Number(v) : null;
+      };
 
       const registrosNuevos = [];
       for (let r = filasDatos; r < raw.length; r++) {
@@ -5288,24 +5315,30 @@ export default function App() {
         const estab = fila[0];
         if (!estab || String(estab).toUpperCase().includes("TOTAL")) continue;
 
-        for (const { col: c, fecha } of bloques) {
-          const demanda   = fila[c]   != null ? Number(fila[c])   : null;
-          const atendidos = fila[c+1] != null ? Number(fila[c+1]) : null;
-          const resp      = fila[c+2] != null ? Number(fila[c+2]) : null;
-          const espera    = fila[c+3] != null ? Number(fila[c+3]) : null;
-          const abandonos = fila[c+4] != null ? Number(fila[c+4]) : null;
+        for (const { col: c, fecha, hdrMap } of bloques) {
+          const demanda   = n(fila, c, hdrMap.demanda);
+          const atendidos = n(fila, c, hdrMap.atendidos);
+          const resp      = n(fila, c, hdrMap.resp);
+          const espera    = n(fila, c, hdrMap.espera);
+          const abandonos = n(fila, c, hdrMap.abandonos);
+          const hec       = n(fila, c, hdrMap.hec);
+          const huap      = n(fila, c, hdrMap.huap);
+          const hcsba     = n(fila, c, hdrMap.hcsba);
 
-          if ((demanda === null || isNaN(demanda)) && (atendidos === null || isNaN(atendidos))) continue;
+          if ((demanda === null) && (atendidos === null)) continue;
 
           registrosNuevos.push({
             fecha,
             semana_epi:               getEpiWeek(fecha),
             establecimiento:          String(estab).trim(),
-            demanda_total:            (demanda   != null && !isNaN(demanda))   ? demanda   : null,
-            pacientes_atendidos:      (atendidos != null && !isNaN(atendidos)) ? atendidos : null,
-            atenciones_respiratorias: (resp      != null && !isNaN(resp))      ? resp      : null,
-            tiempo_espera:            (espera    != null && !isNaN(espera))    ? espera    : null,
-            abandonos:                (abandonos != null && !isNaN(abandonos)) ? abandonos : null,
+            demanda_total:            demanda,
+            pacientes_atendidos:      atendidos,
+            atenciones_respiratorias: resp,
+            tiempo_espera:            espera,
+            abandonos:                abandonos,
+            derivaciones_hec:         hec,
+            derivaciones_huap:        huap,
+            derivaciones_hcsba:       hcsba,
           });
         }
       }
@@ -5315,16 +5348,42 @@ export default function App() {
         return;
       }
 
-      // Insertar en lotes de 100
+      // Obtener fechas y establecimientos ya existentes en Supabase
+      const fechasUnicas = [...new Set(registrosNuevos.map(r => r.fecha))];
+      const { data: existentes } = await supabase
+        .from("registros")
+        .select("fecha, establecimiento")
+        .in("fecha", fechasUnicas);
+
+      const claveExistente = new Set(
+        (existentes || []).map(r => `${r.fecha}__${r.establecimiento}`)
+      );
+
+      const soloNuevos = registrosNuevos.filter(r =>
+        !claveExistente.has(`${r.fecha}__${r.establecimiento}`)
+      );
+
+      const duplicados = registrosNuevos.length - soloNuevos.length;
+
+      if (soloNuevos.length === 0) {
+        setImportResultado({ ok: false, msg: `⚠️ Todos los registros del archivo ya existen en la base de datos (${duplicados} duplicados omitidos). No se cargó nada nuevo.` });
+        return;
+      }
+
+      // Insertar solo los nuevos en lotes de 100
       let insertados = 0;
-      for (let i = 0; i < registrosNuevos.length; i += 100) {
-        const lote = registrosNuevos.slice(i, i + 100);
+      for (let i = 0; i < soloNuevos.length; i += 100) {
+        const lote = soloNuevos.slice(i, i + 100);
         const { error } = await supabase.from("registros").insert(lote);
         if (error) throw error;
         insertados += lote.length;
       }
 
-      setImportResultado({ ok: true, msg: `✅ ${insertados} registros importados correctamente desde ${file.name}` });
+      const msg = duplicados > 0
+        ? `✅ ${insertados} registros importados. ${duplicados} duplicados omitidos automáticamente.`
+        : `✅ ${insertados} registros importados correctamente desde ${file.name}`;
+
+      setImportResultado({ ok: true, msg });
       e.target.value = "";
     } catch (err) {
       setImportResultado({ ok: false, msg: `❌ Error al importar: ${err.message}` });
@@ -5629,12 +5688,12 @@ export default function App() {
                 <div style={{ fontSize: 26, lineHeight: 1 }}>{totalPendientesDashboard ? "⏳" : "✅"}</div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: totalPendientesDashboard ? "#856404" : P.verde }}>
-                    Ingreso de Datos Pendiente — Últimas 3 Semanas Epidemiológicas
+                    Ingreso de Datos Pendiente — Últimas 5 Semanas Epidemiológicas
                   </div>
                   <div style={{ fontSize: 12, color: totalPendientesDashboard ? "#856404" : P.verde, marginTop: 4 }}>
                     {totalPendientesDashboard
-                      ? `Hay establecimientos con registros pendientes en las últimas 3 semanas epidemiológicas.`
-                      : `Todos los establecimientos están al día en las últimas 3 semanas epidemiológicas.`}
+                      ? `Hay establecimientos con registros pendientes en las últimas 5 semanas epidemiológicas.`
+                      : `Todos los establecimientos están al día en las últimas 5 semanas epidemiológicas.`}
                   </div>
                 </div>
               </div>
