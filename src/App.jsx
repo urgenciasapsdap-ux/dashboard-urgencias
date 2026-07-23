@@ -5387,7 +5387,7 @@ export default function App() {
       }
 
       const msg = duplicados > 0
-        ? `✅ ${insertados} registros importados. ${duplicados} duplicados omitidos automáticamente.`
+        ? `${insertados} registros importados. ${duplicados} registros omitidos por duplicidad.`
         : `✅ ${insertados} registros importados correctamente desde ${file.name}`;
 
       setImportResultado({ ok: true, msg });
@@ -5596,11 +5596,11 @@ export default function App() {
               />
             </div>
             <div>
-              <div style={{ color: "#fff", fontWeight: 700, fontSize: 15, letterSpacing: "-0.2px", lineHeight: 1.3 }}>
-                Urgencias APS · SSMC
+              <div style={{ color: "#fff", fontWeight: 600, fontSize: 14, letterSpacing: "0.01em", lineHeight: 1.3 }}>
+                Sistema de Monitoreo de Urgencias APS
               </div>
-              <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, marginTop: 1 }}>
-                Servicio de Salud Metropolitano Central · Ministerio de Salud
+              <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 11, marginTop: 2, fontWeight: 400, letterSpacing: "0.02em" }}>
+                Servicio de Salud Metropolitano Central · Ministerio de Salud de Chile
               </div>
             </div>
           </div>
@@ -5692,7 +5692,7 @@ export default function App() {
               borderRadius: 12, padding: "16px 20px", marginBottom: 18,
             }}>
               <div style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: totalPendientesDashboard ? 14 : 0 }}>
-                <div style={{ fontSize: 26, lineHeight: 1 }}>{totalPendientesDashboard ? "⏳" : "✅"}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: totalPendientesDashboard ? "#C0392B" : "#1A7A4A" }}>{totalPendientesDashboard ? "Pendiente" : "Al día"}</div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: totalPendientesDashboard ? "#856404" : P.verde }}>
                     Ingreso de Datos Pendiente — Últimas 5 Semanas Epidemiológicas
@@ -5716,7 +5716,7 @@ export default function App() {
                       <div style={{ fontSize: 12, fontWeight: 700, color: pendientes.length ? "#856404" : P.verde, marginBottom: pendientes.length ? 8 : 0 }}>
                         {pendientes.length
                           ? <>La <b>{se}</b>{se === seActualDashboard ? " (actual)" : ""} tiene registros pendientes:</>
-                          : <>La <b>{se}</b>{se === seActualDashboard ? " (actual)" : ""} está completa ✅</>}
+                          : <>La <b>{se}</b>{se === seActualDashboard ? " (actual)" : ""} está completa</>}
                       </div>
                       {pendientes.length > 0 && (
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -5916,7 +5916,7 @@ export default function App() {
                 <div style={{ width: 4, alignSelf: "stretch", background: "#C0392B", borderRadius: 2, flexShrink: 0 }} />
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 800, color: "#C0392B" }}>
-                    Alerta: Tiempo de Espera Promedio Superó el Umbral
+                    Alerta — Tiempo de Espera Promedio
                   </div>
                   <div style={{ fontSize: 12, color: "#922B21", marginTop: 3 }}>
                     El promedio de la red es <b>{kpis.promEspera} min</b>, superando el umbral de <b>180 min</b>. Se recomienda revisar la distribución de atenciones y disponibilidad de recursos en los establecimientos afectados.
@@ -5972,7 +5972,7 @@ export default function App() {
                               return (
                                 <td key={label} style={{ padding: "8px 10px", textAlign: "center", borderBottom: `1px solid ${P.border}` }}>
                                   {tiene
-                                    ? <span style={{ background: color, color: "#fff", borderRadius: 20, padding: "3px 12px", fontWeight: 700, fontSize: 13 }}>✓</span>
+                                    ? <span style={{ background: color, color: "#fff", borderRadius: 20, padding: "3px 12px", fontWeight: 700, fontSize: 13 }}>Sí</span>
                                     : <span style={{ color: P.grisMid }}>—</span>
                                   }
                                 </td>
@@ -6322,7 +6322,7 @@ export default function App() {
                   background: P.azul, color: "#fff", border: "none", borderRadius: 8,
                   padding: "10px 28px", cursor: "pointer", fontSize: 14, fontWeight: 700
                 }}>
-                  {editId ? "💾 Actualizar Registro" : "✅ Guardar Registro"}
+                  {editId ? "Actualizar Registro" : "Guardar Registro"}
                 </button>
                 {editId && (
                   <button onClick={() => { setForm(EMPTY_FORM); setEditId(null); }} style={{
@@ -6563,7 +6563,7 @@ export default function App() {
           <div style={{ maxWidth: 600, margin: "0 auto" }}>
             <div style={{ fontSize: 20, fontWeight: 800, color: P.azulDark, marginBottom: 6 }}>Importar desde Excel</div>
             <p style={{ color: P.muted, fontSize: 13, marginBottom: 24 }}>
-              Sube el archivo Excel con el formato estándar de atenciones. Los datos se cargan automáticamente a Supabase.
+              Cargue el archivo en formato .xlsx correspondiente a la planilla de revisión diaria de atención de urgencias APS. Los registros se incorporan automáticamente a la base de datos.
             </p>
 
             {/* Botón de carga explícito — funciona en móvil */}
@@ -6587,7 +6587,7 @@ export default function App() {
                 cursor: importando ? "not-allowed" : "pointer",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
               }}>
-                {importando ? "⏳ Procesando..." : "Seleccionar archivo"}
+                {importando ? "Procesando..." : "Seleccionar archivo"}
               </label>
               <div style={{ fontSize: 12, color: P.muted, marginTop: 10 }}>
                 Formato compatible: .xlsx — Planilla de revisión diaria de atención de urgencias APS
@@ -6905,7 +6905,7 @@ function ComparadorPeriodos({ semanasOpts, registros, filtroPolo, filtroEstab, p
         </div>
       </>) : (
         <div style={{ textAlign: "center", padding: 24, color: P.muted, fontSize: 13 }}>
-          Selecciona un rango de SE en cada período para comparar
+          Seleccione un rango de semanas epidemiológicas en cada período para iniciar la comparación.
         </div>
       )}
     </div>
