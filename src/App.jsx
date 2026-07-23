@@ -5357,40 +5357,31 @@ export default function App() {
         return;
       }
 
-      // Verificar duplicados en lotes de 50 fechas para no saturar Supabase
-      const fechasUnicas = [...new Set(registrosNuevos.map(r => r.fecha))];
-      const claveExistente = new Set();
-      for (let i = 0; i < fechasUnicas.length; i += 50) {
-        const lote = fechasUnicas.slice(i, i + 50);
-        const { data: existentes } = await supabase
-          .from("registros")
-          .select("fecha, establecimiento")
-          .in("fecha", lote);
-        (existentes || []).forEach(r => claveExistente.add(`${r.fecha}__${r.establecimiento}`));
-      }
-
-      const soloNuevos = registrosNuevos.filter(r =>
-        !claveExistente.has(`${r.fecha}__${r.establecimiento}`)
-      );
-      const duplicados = registrosNuevos.length - soloNuevos.length;
-
-      if (soloNuevos.length === 0) {
-        setImportResultado({ ok: false, msg: `Todos los registros ya existen en la base de datos (${duplicados} duplicados omitidos). No se cargó nada nuevo.` });
-        return;
-      }
-
-      // Insertar solo los nuevos en lotes de 100
+      // Insertar usando upsert — si ya existe la combinación fecha+establecimiento, se omite
+      // Requiere constraint UNIQUE en Supabase: CREATE UNIQUE INDEX IF NOT EXISTS
+      // idx_registros_unique ON registros(fecha, establecimiento);
       let insertados = 0;
-      for (let i = 0; i < soloNuevos.length; i += 100) {
-        const lote = soloNuevos.slice(i, i + 100);
-        const { error } = await supabase.from("registros").insert(lote);
+      let duplicados = 0;
+
+      for (let i = 0; i < registrosNuevos.length; i += 50) {
+        const lote = registrosNuevos.slice(i, i + 50);
+        const { data, error } = await supabase
+          .from("registros")
+          .upsert(lote, {
+            onConflict: "fecha,establecimiento",
+            ignoreDuplicates: true,
+          })
+          .select("id");
+
         if (error) throw error;
-        insertados += lote.length;
+        const insertadosLote = (data || []).length;
+        insertados += insertadosLote;
+        duplicados += lote.length - insertadosLote;
       }
 
       const msg = duplicados > 0
         ? `${insertados} registros importados. ${duplicados} registros omitidos por duplicidad.`
-        : `✅ ${insertados} registros importados correctamente desde ${file.name}`;
+        : `${insertados} registros importados correctamente desde ${file.name}`;
 
       setImportResultado({ ok: true, msg });
       e.target.value = "";
