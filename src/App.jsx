@@ -7011,25 +7011,45 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
   const seOrdenadas = semanasOpts.filter(se => porSE[se]);
   const historial   = seOrdenadas.map(se => ({ se, ...porSE[se] }));
 
-  // Calcular proyección
+  // Extraer número de SE (ej: "SE 27" → 27)
+  const seToNum = (se) => parseInt((se || "").replace(/\D/g, "")) || 0;
+
+  // Última SE del historial
+  const ultimaSE = historial.length > 0 ? seToNum(historial[historial.length - 1].se) : 0;
+
+  // Calcular proyección mejorada
   const proyectar = () => {
     if (historial.length < 2) return [];
     const resultado = [];
     const N = Number(semanas);
 
     for (let i = 1; i <= N; i++) {
-      const seNum  = historial.length + i;
+      const seNum   = ultimaSE + i;
       const seLabel = `SE ${String(seNum).padStart(2, "0")} (proy)`;
 
       let demanda, resp;
 
       if (metodo === "historico") {
-        // Promedio de todas las semanas históricas
-        demanda = Math.round(historial.reduce((a, s) => a + s.demanda, 0) / historial.length);
-        resp    = Math.round(historial.reduce((a, s) => a + s.resp, 0)    / historial.length);
+        // Promedio ESTACIONAL: usar solo semanas del mismo rango (±4 SE)
+        const semanaObjetivo = seNum;
+        const semanasEstacionales = historial.filter(s => {
+          const n = seToNum(s.se);
+          return Math.abs(n - semanaObjetivo) <= 4;
+        });
+
+        if (semanasEstacionales.length >= 2) {
+          // Tenemos semanas cercanas — usar su promedio
+          demanda = Math.round(semanasEstacionales.reduce((a,s) => a + s.demanda, 0) / semanasEstacionales.length);
+          resp    = Math.round(semanasEstacionales.reduce((a,s) => a + s.resp, 0)    / semanasEstacionales.length);
+        } else {
+          // Fallback: promedio de las últimas 6 semanas
+          const ult6 = historial.slice(-6);
+          demanda = Math.round(ult6.reduce((a,s) => a + s.demanda, 0) / ult6.length);
+          resp    = Math.round(ult6.reduce((a,s) => a + s.resp, 0)    / ult6.length);
+        }
       } else {
-        // Tendencia: regresión lineal simple sobre últimas 8 semanas
-        const ultimas = historial.slice(-8);
+        // Tendencia reciente: regresión lineal sobre últimas 5 semanas (más reactivo)
+        const ultimas = historial.slice(-5);
         const n = ultimas.length;
         const xs = ultimas.map((_, j) => j + 1);
         const meanX = xs.reduce((a, b) => a + b, 0) / n;
@@ -7040,7 +7060,10 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
           const den   = xs.reduce((a, x) => a + (x - meanX) ** 2, 0);
           const slope = den ? num / den : 0;
           const inter = meanY - slope * meanX;
-          return Math.max(0, Math.round(inter + slope * (n + i)));
+          // Limitar la pendiente para no proyectar cambios extremos
+          const slopeLimit = meanY * 0.08; // máx 8% de variación por semana
+          const slopeLimitado = Math.max(-slopeLimit, Math.min(slopeLimit, slope));
+          return Math.max(0, Math.round(inter + slopeLimitado * (n + i)));
         };
 
         demanda = linReg(ultimas.map(s => s.demanda));
@@ -7189,8 +7212,8 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
         </table>
         <div style={{ fontSize: 11, color: P.muted, marginTop: 10 }}>
           {metodo === "historico"
-            ? `Método: promedio de las ${historial.length} semanas históricas disponibles`
-            : `Método: regresión lineal sobre las últimas ${Math.min(8, historial.length)} semanas`}
+            ? `Método: promedio estacional (semanas del mismo rango ±4 SE del historial)`
+            : `Método: tendencia reciente (regresión lineal sobre las últimas 5 semanas con límite de variación del 8% semanal)`}
         </div>
       </div>
     </div>
