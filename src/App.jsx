@@ -5373,7 +5373,7 @@ export default function App() {
       const duplicados = registrosNuevos.length - soloNuevos.length;
 
       if (soloNuevos.length === 0) {
-        setImportResultado({ ok: false, msg: `⚠️ Todos los registros ya existen en la base de datos (${duplicados} duplicados omitidos). No se cargó nada nuevo.` });
+        setImportResultado({ ok: false, msg: `Todos los registros ya existen en la base de datos (${duplicados} duplicados omitidos). No se cargó nada nuevo.` });
         return;
       }
 
@@ -5610,12 +5610,12 @@ export default function App() {
               border: "1.5px solid rgba(255,255,255,0.35)",
               borderRadius: 6, padding: "6px 12px", cursor: "pointer",
               fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 4,
-            }}>↓ Excel</button>
+            }}>Exportar Excel</button>
             <button onClick={() => setMostrarPDF(true)} style={{
               background: P.rojo, color: "#fff", border: "none",
               borderRadius: 6, padding: "6px 12px", cursor: "pointer",
               fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 4,
-            }}>↓ PDF</button>
+            }}>Exportar PDF</button>
           </div>
         </div>
 
@@ -5661,10 +5661,10 @@ export default function App() {
           {menuMovil && (
             <div style={{ background: P.azulDark, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
               {[
-                {id:"dashboard",label:"📊 Resumen"},{id:"formulario",label:"➕ Ingresar"},
-                {id:"tabla",label:"📋 Tabla"},{id:"ambulancias",label:"🚑 Ambulancias"},
-                {id:"importar",label:"📥 Importar"},{id:"tiempos",label:"⏱️ T° Espera"},
-                {id:"proyecciones",label:"📈 Proyecciones"},
+                {id:"dashboard",label:"Resumen"},{id:"formulario",label:"Ingresar"},
+                {id:"tabla",label:"Tabla"},{id:"ambulancias",label:"Ambulancias"},
+                {id:"importar",label:"Importar"},{id:"tiempos",label:"T° Espera"},
+                {id:"proyecciones",label:"Proyecciones"},
               ].map(t => (
                 <button key={t.id} onClick={() => { setTab(t.id); setMenuMovil(false); }} style={{
                   display: "block", width: "100%", textAlign: "left",
@@ -5738,7 +5738,7 @@ export default function App() {
 
             {/* Filtros */}
             <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 10, padding: "14px 18px", marginBottom: 22, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, alignSelf: "center", marginRight: 4 }}>🔍 Filtros</div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, alignSelf: "center", marginRight: 4 }}>Filtros</div>
               {[
                 { label: "Polo", options: POLOS, val: filtroPolo, set: setFiltroPolo },
                 { label: "Semana Epidemiológica", options: semanas, val: filtroSemana, set: setFiltroSemana },
@@ -5838,7 +5838,7 @@ export default function App() {
                 </div>
               ) : (
                 <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", color: P.muted, fontSize: 13 }}>
-                  Sin datos de demanda para calcular absorción con los filtros aplicados.
+                  Sin registros disponibles para el período seleccionado.
                 </div>
               )}
             </div>
@@ -5901,7 +5901,7 @@ export default function App() {
                 </div>
               ) : (
                 <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", color: P.muted, fontSize: 13 }}>
-                  Sin datos para mostrar con los filtros aplicados.
+                  Sin registros disponibles para el período seleccionado.
                 </div>
               )}
             </div>
@@ -5913,13 +5913,13 @@ export default function App() {
                 padding: "14px 20px", marginBottom: 14,
                 display: "flex", alignItems: "center", gap: 14,
               }}>
-                <div style={{ fontSize: 28, flexShrink: 0 }}>🚨</div>
+                <div style={{ width: 4, alignSelf: "stretch", background: "#C0392B", borderRadius: 2, flexShrink: 0 }} />
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 800, color: "#C0392B" }}>
                     Alerta: Tiempo de Espera Promedio Superó el Umbral
                   </div>
                   <div style={{ fontSize: 12, color: "#922B21", marginTop: 3 }}>
-                    El promedio de la red es <b>{kpis.promEspera} min</b>, superando el umbral de <b>180 min</b>. Se recomienda revisar la distribución de atenciones y refuerzos disponibles.
+                    El promedio de la red es <b>{kpis.promEspera} min</b>, superando el umbral de <b>180 min</b>. Se recomienda revisar la distribución de atenciones y disponibilidad de recursos en los establecimientos afectados.
                   </div>
                 </div>
               </div>
@@ -5948,8 +5948,8 @@ export default function App() {
               return (
                 <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18, marginBottom: 14 }}>
                   <div style={{ marginBottom: 12 }}>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>⚡ Refuerzos por Establecimiento</div>
-                    <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Días con refuerzo y estamentos activos según filtros aplicados</div>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark }}>Refuerzos por Establecimiento</div>
+                    <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Establecimientos con refuerzo de recursos humanos en el período filtrado</div>
                   </div>
                   <div style={{ overflowX: "auto" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 500 }}>
@@ -6012,7 +6012,7 @@ export default function App() {
                 </ResponsiveContainer>
               ) : (
                 <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", color: P.muted, fontSize: 13 }}>
-                  Sin datos para mostrar. Ingresa registros para ver el comportamiento diario.
+                  Sin registros disponibles para el período seleccionado.
                 </div>
               )}
             </div>
@@ -6050,7 +6050,7 @@ export default function App() {
                 </ResponsiveContainer>
               ) : (
                 <div style={{ height: 100, display: "flex", alignItems: "center", justifyContent: "center", color: P.muted, fontSize: 13 }}>
-                  Sin datos para mostrar con los filtros aplicados.
+                  Sin registros disponibles para el período seleccionado.
                 </div>
               )}
             </div>
@@ -6078,7 +6078,7 @@ export default function App() {
                 </ResponsiveContainer>
               ) : (
                 <div style={{ height: 100, display: "flex", alignItems: "center", justifyContent: "center", color: P.muted, fontSize: 13 }}>
-                  Sin datos para mostrar con los filtros aplicados.
+                  Sin registros disponibles para el período seleccionado.
                 </div>
               )}
             </div>
@@ -6175,8 +6175,8 @@ export default function App() {
           <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "16px 20px", marginTop: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: mostrarComparador ? 20 : 0 }}>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 800, color: P.azulDark }}>📊 Comparar Períodos</div>
-                <div style={{ fontSize: 12, color: P.muted }}>Compara métricas entre dos rangos de semanas epidemiológicas</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: P.azulDark }}>Comparación de Períodos</div>
+                <div style={{ fontSize: 12, color: P.muted }}>Análisis comparativo entre dos períodos epidemiológicos seleccionados</div>
               </div>
               <button onClick={() => setMostrarComparador(v => !v)} style={{
                 background: mostrarComparador ? P.azulLight : P.azul, color: mostrarComparador ? P.azul : "#fff",
@@ -6265,7 +6265,7 @@ export default function App() {
                   <input type="checkbox" name="tiene_refuerzo" id="refuerzo" checked={form.tiene_refuerzo} onChange={handleChange}
                     style={{ width: 16, height: 16, accentColor: P.verde }} />
                   <label htmlFor="refuerzo" style={{ fontSize: 13, fontWeight: 700, cursor: "pointer", color: P.azulDark }}>
-                    ⚡ Este turno contó con refuerzo de RRHH
+                    Este turno contó con refuerzo de RRHH
                   </label>
                 </div>
                 {form.tiene_refuerzo && (
@@ -6387,7 +6387,7 @@ export default function App() {
                         <td style={{ ...tdS, color: "#1A7A9A", fontWeight: 600 }}>{r.tiempo_espera ? `${r.tiempo_espera} min` : "—"}</td>
                         <td style={tdS}>
                           {r.tiene_refuerzo
-                            ? <span style={{ background: P.verdeLight, color: P.verde, padding: "2px 9px", borderRadius: 20, fontSize: 11, fontWeight: 700 }}>⚡ {r.tipo_refuerzo}</span>
+                            ? <span style={{ background: P.verdeLight, color: P.verde, padding: "2px 9px", borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{r.tipo_refuerzo}</span>
                             : <span style={{ color: P.grisMid }}>—</span>}
                         </td>
                         <td style={tdS}>
@@ -6415,7 +6415,7 @@ export default function App() {
         {tab === "ambulancias" && (
           <div>
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 17, fontWeight: 800, color: P.azulDark }}>🚑 Retenciones de Ambulancias</div>
+              <div style={{ fontSize: 17, fontWeight: 800, color: P.azulDark }}>Retenciones de Ambulancias</div>
               <div style={{ fontSize: 12, color: P.muted, marginTop: 4 }}>
                 Registra el tiempo que una ambulancia permanece retenida en el establecimiento al momento del traslado. Completa hasta {AMBULANCIA_FILAS} líneas y guarda en un solo paso.
               </div>
@@ -6561,7 +6561,7 @@ export default function App() {
         {/* ── IMPORTAR EXCEL ──────────────────────────────── */}
         {tab === "importar" && (
           <div style={{ maxWidth: 600, margin: "0 auto" }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: P.azulDark, marginBottom: 6 }}>📥 Importar desde Excel</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: P.azulDark, marginBottom: 6 }}>Importar desde Excel</div>
             <p style={{ color: P.muted, fontSize: 13, marginBottom: 24 }}>
               Sube el archivo Excel con el formato estándar de atenciones. Los datos se cargan automáticamente a Supabase.
             </p>
@@ -6587,16 +6587,16 @@ export default function App() {
                 cursor: importando ? "not-allowed" : "pointer",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
               }}>
-                {importando ? "⏳ Procesando..." : "📂 Seleccionar archivo Excel"}
+                {importando ? "⏳ Procesando..." : "Seleccionar archivo"}
               </label>
               <div style={{ fontSize: 12, color: P.muted, marginTop: 10 }}>
-                Formato .xlsx — mismo formato del reporte semanal SSMC
+                Formato compatible: .xlsx — Planilla de revisión diaria de atención de urgencias APS
               </div>
             </div>
 
             {importando && (
               <div style={{ padding: 16, background: P.azulLight, borderRadius: 10, textAlign: "center", color: P.azul, fontWeight: 700, marginBottom: 16 }}>
-                ⏳ Importando datos... por favor espera
+                Procesando archivo, por favor espere...
               </div>
             )}
 
@@ -6617,7 +6617,7 @@ export default function App() {
             )}
 
             <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: 18 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark, marginBottom: 12 }}>📋 Formato esperado del Excel</div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: P.azulDark, marginBottom: 12 }}>Formato esperado del archivo</div>
               {[
                 "Fila 1: Semanas epidemiológicas (SE 01, SE 02…)",
                 "Fila 2: Fechas de cada día (01/01/2026, 02/01/2026…)",
@@ -6658,14 +6658,18 @@ export default function App() {
         )}
 
       <style>{`
-  @keyframes fadeIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
   * { box-sizing: border-box; }
-  body { margin: 0; }
+  body { margin: 0; font-size: 14px; }
   input, select, textarea { font-family: inherit; }
+  h1, h2, h3, h4 { margin: 0; font-weight: 600; }
+  button { font-family: inherit; }
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: #F4F6FA; }
   ::-webkit-scrollbar-thumb { background: #C2D0E4; border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: #1A3A6B; }
+  table { border-collapse: collapse; }
+  th { font-weight: 600; letter-spacing: 0.02em; }
   @media (max-width: 640px) {
     .nav-desktop { display: none !important; }
     .nav-mobile  { display: block !important; }
@@ -6781,8 +6785,8 @@ function ComparadorPeriodos({ semanasOpts, registros, filtroPolo, filtroEstab, p
       {/* Selectores de período */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
         {[
-          { label: "📘 Período 1", desde: p1desde, setDesde: setP1desde, hasta: p1hasta, setHasta: setP1hasta, color: "#2980b9" },
-          { label: "📗 Período 2", desde: p2desde, setDesde: setP2desde, hasta: p2hasta, setHasta: setP2hasta, color: "#27ae60" },
+          { label: "Período 1", desde: p1desde, setDesde: setP1desde, hasta: p1hasta, setHasta: setP1hasta, color: "#2980b9" },
+          { label: "Período 2", desde: p2desde, setDesde: setP2desde, hasta: p2hasta, setHasta: setP2hasta, color: "#27ae60" },
         ].map(({ label, desde, setDesde, hasta, setHasta, color }) => (
           <div key={label} style={{ background: P.azulLight, borderRadius: 10, padding: "14px 16px", border: `2px solid ${color}30` }}>
             <div style={{ fontSize: 13, fontWeight: 800, color, marginBottom: 10 }}>{label}</div>
@@ -6847,7 +6851,7 @@ function ComparadorPeriodos({ semanasOpts, registros, filtroPolo, filtroEstab, p
                     return `${label} | P1: ${payload[0]?.payload?.seP1 || "—"} · P2: ${payload[0]?.payload?.seP2 || "—"}`;
                   }}
                 />
-                <Legend formatter={n => n === "P1" ? `📘 P1 (${p1desde}→${p1hasta})` : `📗 P2 (${p2desde}→${p2hasta})`} />
+                <Legend formatter={n => n === "P1" ? `P1 (${p1desde}→${p1hasta})` : `P2 (${p2desde}→${p2hasta})`} />
                 <Bar dataKey="P1" fill="#2980b9" radius={[4,4,0,0]} />
                 <Bar dataKey="P2" fill="#27ae60" radius={[4,4,0,0]} />
               </BarChart>
@@ -6863,7 +6867,7 @@ function ComparadorPeriodos({ semanasOpts, registros, filtroPolo, filtroEstab, p
                     return `${label} | P1: ${payload[0]?.payload?.seP1 || "—"} · P2: ${payload[0]?.payload?.seP2 || "—"}`;
                   }}
                 />
-                <Legend formatter={n => n === "P1" ? `📘 P1 (${p1desde}→${p1hasta})` : `📗 P2 (${p2desde}→${p2hasta})`} />
+                <Legend formatter={n => n === "P1" ? `P1 (${p1desde}→${p1hasta})` : `P2 (${p2desde}→${p2hasta})`} />
                 <Line dataKey="P1" stroke="#2980b9" strokeWidth={2.5} dot={{ r: 3 }} connectNulls />
                 <Line dataKey="P2" stroke="#27ae60" strokeWidth={2.5} dot={{ r: 3 }} connectNulls />
               </LineChart>
@@ -6879,10 +6883,10 @@ function ComparadorPeriodos({ semanasOpts, registros, filtroPolo, filtroEstab, p
               <tr>
                 <th style={{ padding: "10px 12px", background: P.azulLight, color: P.azulDark, fontSize: 12, fontWeight: 800, textAlign: "left" }}>Métrica</th>
                 <th style={{ padding: "10px 12px", background: "#2980b915", color: "#2980b9", fontSize: 12, fontWeight: 800, textAlign: "right" }}>
-                  📘 {p1desde}{p1hasta && p1hasta !== p1desde ? ` → ${p1hasta}` : ""}
+                  {p1desde}{p1hasta && p1hasta !== p1desde ? ` → ${p1hasta}` : ""}
                 </th>
                 <th style={{ padding: "10px 12px", background: "#27ae6015", color: "#27ae60", fontSize: 12, fontWeight: 800, textAlign: "right" }}>
-                  📗 {p2desde}{p2hasta && p2hasta !== p2desde ? ` → ${p2hasta}` : ""}
+                  {p2desde}{p2hasta && p2hasta !== p2desde ? ` → ${p2hasta}` : ""}
                 </th>
               </tr>
             </thead>
@@ -6929,7 +6933,7 @@ function ResumenAmbulancias({ registrosAmbulancias, filtroEstab, filtroPolo, POL
 
   return (
     <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "16px 20px", marginTop: 24 }}>
-      <div style={{ fontSize: 15, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>🚑 Retenciones de Ambulancias</div>
+      <div style={{ fontSize: 15, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>Retenciones de Ambulancias</div>
       <div style={{ fontSize: 12, color: P.muted, marginBottom: 16 }}>Resumen según filtros aplicados</div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
@@ -7060,9 +7064,9 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
-      <div style={{ fontSize: 20, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>📈 Proyección de Demanda</div>
+      <div style={{ fontSize: 20, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>Proyección de Demanda</div>
       <div style={{ fontSize: 13, color: P.muted, marginBottom: 24 }}>
-        Estimación basada en datos históricos según filtros aplicados
+        Proyección estadística basada en el historial de atenciones registradas
       </div>
 
       {/* Controles */}
@@ -7070,7 +7074,7 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, color: P.muted, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Método</div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button style={btnStyle(metodo === "historico")} onClick={() => setMetodo("historico")}>📊 Promedio histórico</button>
+            <button style={btnStyle(metodo === "historico")} onClick={() => setMetodo("historico")}>Promedio histórico</button>
             <button style={btnStyle(metodo === "tendencia")} onClick={() => setMetodo("tendencia")}>📉 Tendencia reciente</button>
           </div>
         </div>
@@ -7089,7 +7093,7 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
 
       {/* Nota semana excluida */}
       <div style={{ background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 8, padding: "10px 16px", marginBottom: 16, fontSize: 12, color: "#856404" }}>
-        ⚠️ La semana en curso (<b>{seActual}</b>) y la anterior (<b>{seAnterior}</b>) fueron excluidas automáticamente por tener datos incompletos o aún en carga.
+        La semana en curso (<b>{seActual}</b>) y la anterior (<b>{seAnterior}</b>) fueron excluidas automáticamente por tener datos incompletos o aún en carga.
       </div>
 
       {/* Gráfico Demanda */}
@@ -7292,12 +7296,12 @@ function TabTiemposEspera({ registros, P, inpS }) {
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-      <div style={{ fontSize: 20, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>⏱️ Tiempos de Espera</div>
+      <div style={{ fontSize: 20, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>Tiempos de Espera</div>
       <div style={{ fontSize: 13, color: P.muted, marginBottom: 16 }}>Análisis por establecimiento, semana epidemiológica y día</div>
 
       {/* Filtros propios */}
       <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, alignSelf: "center" }}>🔍 Filtros</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, alignSelf: "center" }}>Filtros</div>
 
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, color: P.muted, marginBottom: 4, textTransform: "uppercase" }}>Polo</div>
@@ -7336,7 +7340,7 @@ function TabTiemposEspera({ registros, P, inpS }) {
         <button onClick={() => { setTPolo("Todos"); setTEstab("Todos"); setTSEDesde(""); setTSEHasta(""); }}
           style={{ padding: "6px 14px", borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: "pointer",
             background: P.azulLight, color: P.azulDark, border: `1px solid ${P.border}` }}>
-          ✕ Limpiar
+          Limpiar filtros
         </button>
 
         <div style={{ marginLeft: "auto", fontSize: 12, color: P.muted, alignSelf: "center" }}>
@@ -7359,7 +7363,7 @@ function TabTiemposEspera({ registros, P, inpS }) {
           }}>
             <div style={{ fontSize: 11, color: P.muted, fontWeight: 600 }}>{label}</div>
             <div style={{ fontSize: 18, fontWeight: 800, color }}>{val}</div>
-            {alerta && <div style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700, marginTop: 2 }}>⚠️ Sobre umbral</div>}
+            {alerta && <div style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700, marginTop: 2 }}>Sobre umbral</div>}
           </div>
         ))}
       </div>
@@ -7412,7 +7416,7 @@ function TabTiemposEspera({ registros, P, inpS }) {
                   <tr key={d.establecimiento} style={{ background: d.alerta ? "#fdecea" : i % 2 === 0 ? "#fff" : P.bg }}>
                     <td style={{ padding: "8px 10px", textAlign: "right", color: P.muted, fontWeight: 700 }}>{i+1}</td>
                     <td style={{ padding: "8px 10px", fontWeight: 700, color: d.alerta ? "#e74c3c" : P.azulDark }}>
-                      {d.alerta && "⚠️ "}{d.establecimiento}
+                      {d.alerta && ""}{d.establecimiento}
                     </td>
                     <td style={{ padding: "8px 10px", textAlign: "right", fontWeight: 800, color: d.alerta ? "#e74c3c" : P.azul }}>{d.promedio}</td>
                     <td style={{ padding: "8px 10px", textAlign: "right", color: P.verde }}>{d.minimo}</td>
@@ -7436,7 +7440,7 @@ function TabTiemposEspera({ registros, P, inpS }) {
             <XAxis dataKey="se" tick={{ fontSize: 10 }} interval={dataSE.length > 20 ? Math.floor(dataSE.length/8) : 0} angle={dataSE.length > 15 ? -30 : 0} textAnchor={dataSE.length > 15 ? "end" : "middle"} height={dataSE.length > 15 ? 45 : 25} />
             <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v}m`} />
             <Tooltip formatter={(v, n) => [`${v} min`, n === "promedio" ? "Promedio red" : n === "maximo" ? "Máximo" : "Mínimo"]} />
-            <ReferenceLine y={180} stroke="#e74c3c" strokeDasharray="4 2" label={{ value: "⚠️ 180 min", position: "right", fontSize: 10, fill: "#e74c3c" }} />
+            <ReferenceLine y={180} stroke="#e74c3c" strokeDasharray="4 2" label={{ value: "180 min", position: "right", fontSize: 10, fill: "#e74c3c" }} />
             <Bar dataKey="promedio" radius={[4,4,0,0]} barSize={dataSE.length > 20 ? 6 : 14}>
               {dataSE.map((d,i) => <Cell key={i} fill={d.promedio > 180 ? "#e74c3c" : P.azul} />)}
             </Bar>
@@ -7455,7 +7459,7 @@ function TabTiemposEspera({ registros, P, inpS }) {
             <XAxis dataKey="dia" tick={{ fontSize: 10 }} interval={dataDia.length > 20 ? Math.floor(dataDia.length/8) : 0} angle={dataDia.length > 15 ? -30 : 0} textAnchor={dataDia.length > 15 ? "end" : "middle"} height={dataDia.length > 15 ? 45 : 25} />
             <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v}m`} />
             <Tooltip formatter={v => [`${v} min`, "Promedio red"]} />
-            <ReferenceLine y={180} stroke="#e74c3c" strokeDasharray="4 2" label={{ value: "⚠️ 180 min", position: "right", fontSize: 10, fill: "#e74c3c" }} />
+            <ReferenceLine y={180} stroke="#e74c3c" strokeDasharray="4 2" label={{ value: "180 min", position: "right", fontSize: 10, fill: "#e74c3c" }} />
             <Bar dataKey="promedio" radius={[3,3,0,0]} barSize={dataDia.length > 60 ? 3 : 8}>
               {dataDia.map((d,i) => <Cell key={i} fill={d.promedio > 180 ? "#e74c3c" : `${P.azul}90`} />)}
             </Bar>
@@ -7467,7 +7471,7 @@ function TabTiemposEspera({ registros, P, inpS }) {
       {/* Días críticos */}
       {diasCriticos.length > 0 && (
         <div style={{ background: "#fdecea", border: "1.5px solid #e74c3c", borderRadius: 8, padding: 18 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: "#c0392b", marginBottom: 4 }}>⚠️ Días Críticos (sobre 180 min)</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "#c0392b", marginBottom: 4 }}>Días Críticos — Tiempo de Espera Superior a 180 min</div>
           <div style={{ fontSize: 11, color: "#c0392b", marginBottom: 14 }}>Top 20 registros con mayor tiempo de espera según filtros aplicados</div>
           <div style={{ overflow: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 340 }}>
@@ -7560,7 +7564,7 @@ function ModalPDF({ registros, registrosAmbulancias, onClose, P, getPolo }) {
       <div style={{ background:"#fff", borderRadius:10, width:"min(800px,95vw)", margin:"auto" }}>
 
         <div style={{ background:P.azul, padding:"14px 22px", borderRadius:"10px 10px 0 0", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-          <div style={{ color:"#fff", fontWeight:700, fontSize:14 }}>📄 Exportar Reporte PDF</div>
+          <div style={{ color:"#fff", fontWeight:700, fontSize:14 }}>Exportar Reporte</div>
           <button onClick={onClose} style={{ background:"rgba(255,255,255,0.2)", border:"none", borderRadius:6, color:"#fff", padding:"3px 10px", cursor:"pointer", fontSize:16 }}>✕</button>
         </div>
 
@@ -7605,12 +7609,12 @@ function ModalPDF({ registros, registrosAmbulancias, onClose, P, getPolo }) {
             <div style={{ fontSize:12, fontWeight:800, color:P.azulDark, marginBottom:8 }}>Secciones a incluir</div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))", gap:6 }}>
               {[
-                { key:"kpis",          label:"📊 KPIs generales" },
-                { key:"absorcion",     label:"🏥 Absorción" },
-                { key:"refuerzos",     label:"⚡ Refuerzos" },
-                { key:"respiratorias", label:"🫁 Respiratorias" },
-                { key:"ambulancias",   label:"🚑 Ambulancias" },
-                { key:"tabla",         label:"📋 Tabla de registros" },
+                { key:"kpis",          label:"KPIs generales" },
+                { key:"absorcion",     label:"Absorción" },
+                { key:"refuerzos",     label:"Refuerzos" },
+                { key:"respiratorias", label:"Respiratorias" },
+                { key:"ambulancias",   label:"Ambulancias" },
+                { key:"tabla",         label:"Tabla de registros" },
               ].map(({ key, label }) => (
                 <label key={key} style={{
                   display:"flex", alignItems:"center", gap:7, cursor:"pointer",
@@ -7770,7 +7774,7 @@ function ModalPDF({ registros, registrosAmbulancias, onClose, P, getPolo }) {
               Cancelar
             </button>
             <button onClick={() => window.print()} style={{ padding:"7px 22px", borderRadius:6, border:"none", background:P.rojo, color:"#fff", cursor:"pointer", fontSize:12, fontWeight:700 }}>
-              🖨️ Imprimir / Guardar PDF
+              Imprimir / Guardar como PDF
             </button>
           </div>
         </div>
