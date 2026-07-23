@@ -110,25 +110,26 @@ const EMPTY_FORM = {
 const EMPTY_AMBULANCIA_ROW = { fecha: "", establecimiento: "", hora_traslado: "", tiempo_retencion: "" };
 const AMBULANCIA_FILAS = 5;
 
-// Paleta SSMC — papel cálido + teal institucional + ladrillo clínico.
-// Deliberadamente alejada del azul/verde/rojo "semáforo SaaS" por defecto.
+// Paleta SSMC / Minsal – fondo claro
 const P = {
-  azul:       "#1C3F42",  // teal-navy institucional (firma de marca)
-  azulDark:   "#0E2224",
-  azulLight:  "#E9EFEC",
-  azulMid:    "#B8CAC5",
-  verde:      "#3D6B4A",  // verde bosque desaturado
-  verdeLight: "#E8EFE7",
-  amber:      "#93641F",  // ocre, no ámbar bootstrap
-  rojo:       "#9C3B2E",  // ladrillo, no rojo alerta genérico
-  rojoLight:  "#F2E7E2",
-  gris:       "#6E6A5F",
-  grisMid:    "#E2DED3",
-  bg:         "#F5F3EE",  // papel cálido, no gris-azul frío
+  azul:       "#1A3A6B",  // azul SSMC
+  azulDark:   "#0F2347",
+  azulLight:  "#F0F4F9",  // casi blanco con tinte azul
+  azulMid:    "#C8D6E8",
+  verde:      "#1B6B3A",
+  verdeLight: "#EDF7F1",
+  amber:      "#92400E",
+  rojo:       "#B91C1C",  // rojo más sobrio
+  rojoLight:  "#FEF2F2",
+  gris:       "#4B5563",
+  grisMid:    "#E5E7EB",
+  grisClear:  "#F9FAFB",
+  bg:         "#F5F5F5",  // gris neutro tipo papel
   card:       "#FFFFFF",
-  border:     "#DED9CC",
-  text:       "#211E17",  // tinta cálida casi negra
-  muted:      "#6E6A5F",
+  border:     "#D1D5DB",  // borde gris claro definido
+  borderDark: "#9CA3AF",  // borde más oscuro para énfasis
+  text:       "#111827",  // casi negro
+  muted:      "#6B7280",
 };
 
 const DEMO_DATA = [
@@ -5389,12 +5390,12 @@ export default function App() {
 
       const msg = duplicados > 0
         ? `${insertados} registros importados. ${duplicados} registros omitidos por duplicidad.`
-        : `${insertados} registros importados correctamente desde ${file.name}`;
+        : `✅ ${insertados} registros importados correctamente desde ${file.name}`;
 
       setImportResultado({ ok: true, msg });
       e.target.value = "";
     } catch (err) {
-      setImportResultado({ ok: false, msg: `Error al importar: ${err.message}` });
+      setImportResultado({ ok: false, msg: `❌ Error al importar: ${err.message}` });
     } finally {
       setImportando(false);
     }
@@ -5552,97 +5553,79 @@ export default function App() {
     showToast("Archivo Excel exportado");
   };
 
-  const PIE_COLORS = [P.azul, P.verde, P.amber, P.rojo, "#6B4E76", "#3E5C6E"];
+  const PIE_COLORS = [P.azul, P.verde, P.amber, P.rojo, "#7B3FA0", "#1A7A9A"];
 
   const labelS = { display: "block", fontSize: 11, color: P.muted, marginBottom: 5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.4px" };
-  const inpS = { width: "100%", background: "#FBFAF7", color: P.text, border: `1px solid ${P.border}`, borderRadius: 3, padding: "9px 12px", fontSize: 13, boxSizing: "border-box", outline: "none", fontFamily: "var(--font-body)" };
+  const inpS = { width: "100%", background: "#fff", color: P.text, border: `1px solid ${P.border}`, borderRadius: 0, padding: "8px 10px", fontSize: 13, boxSizing: "border-box", outline: "none", fontFamily: "inherit" };
   const tdS = { padding: "10px 12px", whiteSpace: "nowrap", color: P.text, borderBottom: `1px solid ${P.border}` };
 
   return (
-    <div style={{ background: P.bg, minHeight: "100vh", fontFamily: "var(--font-body)", color: P.text }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
-        :root {
-          --font-display: 'Fraunces', Georgia, serif;
-          --font-body: 'IBM Plex Sans', -apple-system, Helvetica, Arial, sans-serif;
-          --font-mono: 'IBM Plex Mono', 'SF Mono', Menlo, monospace;
-        }
-        * { box-sizing: border-box; }
-        ::selection { background: ${P.azulMid}; color: ${P.azulDark}; }
-        button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible {
-          outline: 2px solid ${P.azul}; outline-offset: 1px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .ssmc-spinner {
-          width: 30px; height: 30px; border-radius: 50%;
-          border: 3px solid ${P.azulMid}; border-top-color: ${P.azul};
-          animation: spin 0.8s linear infinite;
-        }
-        ::-webkit-scrollbar { width: 9px; height: 9px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: ${P.azulMid}; border-radius: 5px; }
-      `}</style>
+    <div style={{ background: "#F5F5F5", minHeight: "100vh", fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif", color: "#111827", fontSize: 14, lineHeight: 1.5 }}>
 
       {loading && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(245,243,238,0.94)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", zIndex: 9999, gap: 14 }}>
-          <div className="ssmc-spinner" />
-          <div style={{ fontSize: 15, fontWeight: 600, color: P.azul, fontFamily: "var(--font-display)" }}>Cargando datos</div>
-          <div style={{ fontSize: 12, color: P.muted }}>Sincronizando registros en tiempo real</div>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(255,255,255,0.92)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
+          <div style={{ fontSize: 38, marginBottom: 14 }}>🔄</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: P.azul }}>Cargando datos...</div>
+          <div style={{ fontSize: 12, color: P.muted, marginTop: 6 }}>Cargando datos en tiempo real</div>
         </div>
       )}
       {/* Toast */}
       {toast && (
         <div style={{
           position: "fixed", top: 20, right: 20, zIndex: 9999,
-          background: toast.type === "error" ? P.rojo : toast.type === "warning" ? "#5C3F14" : P.verde,
-          color: "#fff", padding: "12px 20px", borderRadius: 3, fontSize: 13, fontWeight: 600,
+          background: toast.type === "error" ? P.rojo : toast.type === "warning" ? "#92400E" : P.verde,
+          color: "#fff", padding: "12px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600,
           boxShadow: "0 4px 20px rgba(0,0,0,0.2)", animation: "fadeIn 0.3s ease"
         }}>{toast.msg}</div>
       )}
 
       {/* Header SSMC — institucional minimalista */}
-      <div style={{ background: P.azul }}>
+      <div style={{ background: P.azulDark, borderBottom: `4px solid ${P.rojo}` }}>
         {/* Banda principal */}
-        <div style={{ padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <div style={{ padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            {/* Marca SSMC — cruz de salud dibujada, sin depender de imagen externa ni emoji */}
+            {/* Logo SSMC */}
             <div style={{
-              width: 40, height: 40, borderRadius: 4, background: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.18)",
-              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              width: 48, height: 48, borderRadius: 0, background: "#fff",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0, padding: 4, overflow: "hidden",
+              borderLeft: "3px solid #C0392B"
             }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z" fill="#fff" />
-              </svg>
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Escudo_de_Chile.svg/240px-Escudo_de_Chile.svg.png"
+                alt="Escudo Chile"
+                style={{ width: 36, height: 36, objectFit: "contain" }}
+                onError={e => { e.target.style.display="none"; e.target.parentNode.innerHTML="<span style='font-size:22px'>🏥</span>"; }}
+              />
             </div>
             <div>
-              <div style={{ color: "#fff", fontWeight: 600, fontSize: 15, letterSpacing: "0.005em", lineHeight: 1.3, fontFamily: "var(--font-display)" }}>
-                Monitoreo de Urgencias APS
-              </div>
-              <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 10.5, marginTop: 2, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>
-                SSMC · Ministerio de Salud de Chile
+              <div>
+                <div style={{ color: "#fff", fontWeight: 700, fontSize: 13, letterSpacing: "0.04em", textTransform: "uppercase", lineHeight: 1.2 }}>
+                  Sistema de Monitoreo — Urgencias APS
+                </div>
+                <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, marginTop: 3, fontWeight: 400, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                  Servicio de Salud Metropolitano Central · Ministerio de Salud
+                </div>
               </div>
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
             <button onClick={exportExcel} style={{
-              background: "transparent", color: "#fff",
-              border: "1px solid rgba(255,255,255,0.3)",
-              borderRadius: 3, padding: "6px 12px", cursor: "pointer",
-              fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 4,
-              fontFamily: "var(--font-body)",
-            }}>Exportar Excel</button>
+              background: "transparent", color: "rgba(255,255,255,0.85)",
+              border: "1px solid rgba(255,255,255,0.25)",
+              borderRadius: 0, padding: "6px 14px", cursor: "pointer",
+              fontSize: 11, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase",
+            }}>Excel</button>
             <button onClick={() => setMostrarPDF(true)} style={{
-              background: "rgba(255,255,255,0.94)", color: P.azulDark, border: "none",
-              borderRadius: 3, padding: "6px 12px", cursor: "pointer",
-              fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 4,
-              fontFamily: "var(--font-body)",
-            }}>Exportar PDF</button>
+              background: P.rojo, color: "#fff", border: "1px solid transparent",
+              borderRadius: 0, padding: "6px 14px", cursor: "pointer",
+              fontSize: 11, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase",
+            }}>PDF</button>
           </div>
         </div>
 
         {/* Nav Tabs — desktop */}
-        <div className="nav-desktop" style={{ display: "flex", paddingLeft: 16, overflowX: "auto", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+        <div className="nav-desktop" style={{ display: "flex", paddingLeft: 16, overflowX: "auto" }}>
           {[
             { id: "dashboard",    label: "Resumen" },
             { id: "formulario",   label: "Ingresar" },
@@ -5653,22 +5636,22 @@ export default function App() {
             { id: "proyecciones", label: "Proyecciones" },
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
-              background: "transparent",
-              color: tab === t.id ? "#fff" : "rgba(255,255,255,0.48)",
+              background: tab === t.id ? "rgba(255,255,255,0.08)" : "transparent",
+              color: tab === t.id ? "#fff" : "rgba(255,255,255,0.45)",
               border: "none",
-              borderBottom: tab === t.id ? "2px solid #fff" : "2px solid transparent",
-              padding: "10px 16px", cursor: "pointer", fontSize: 12,
-              fontWeight: tab === t.id ? 600 : 500,
-              transition: "color 0.15s, border-color 0.15s", whiteSpace: "nowrap",
-              fontFamily: "var(--font-body)", letterSpacing: "0.01em",
+              borderBottom: tab === t.id ? `2px solid ${P.rojo}` : "2px solid transparent",
+              padding: "10px 18px", cursor: "pointer", fontSize: 11,
+              fontWeight: tab === t.id ? 600 : 400,
+              letterSpacing: "0.04em", textTransform: "uppercase",
+              transition: "all 0.12s", whiteSpace: "nowrap",
             }}>{t.label}</button>
           ))}
         </div>
 
         {/* Nav Tabs — móvil hamburguesa */}
         <div className="nav-mobile" style={{ display: "none" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 16px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-            <span style={{ color: "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: 600, fontFamily: "var(--font-display)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 16px" }}>
+            <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 13, fontWeight: 600 }}>
               {[
                 {id:"dashboard",label:"Resumen"},{id:"formulario",label:"Ingresar"},
                 {id:"tabla",label:"Tabla"},{id:"ambulancias",label:"Ambulancias"},
@@ -5676,16 +5659,10 @@ export default function App() {
                 {id:"proyecciones",label:"Proyecciones"},
               ].find(t => t.id === tab)?.label}
             </span>
-            <button onClick={() => setMenuMovil(v => !v)} aria-label="Abrir menú" style={{
-              background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 3,
-              color: "#fff", padding: "6px 9px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              {menuMovil ? (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-              ) : (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-              )}
-            </button>
+            <button onClick={() => setMenuMovil(v => !v)} style={{
+              background: "rgba(255,255,255,0.15)", border: "none", borderRadius: 2,
+              color: "#fff", padding: "5px 11px", cursor: "pointer", fontSize: 18, lineHeight: 1,
+            }}>{menuMovil ? "✕" : "☰"}</button>
           </div>
           {menuMovil && (
             <div style={{ background: P.azulDark, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
@@ -5697,11 +5674,11 @@ export default function App() {
               ].map(t => (
                 <button key={t.id} onClick={() => { setTab(t.id); setMenuMovil(false); }} style={{
                   display: "block", width: "100%", textAlign: "left",
-                  background: tab === t.id ? "rgba(255,255,255,0.08)" : "transparent",
-                  color: tab === t.id ? "#fff" : "rgba(255,255,255,0.6)",
-                  border: "none", borderLeft: tab === t.id ? "2px solid #fff" : "2px solid transparent",
+                  background: tab === t.id ? "rgba(192,57,43,0.25)" : "transparent",
+                  color: tab === t.id ? "#fff" : "rgba(255,255,255,0.65)",
+                  border: "none", borderLeft: tab === t.id ? `3px solid ${P.rojo}` : "3px solid transparent",
                   padding: "12px 20px", cursor: "pointer", fontSize: 13,
-                  fontWeight: tab === t.id ? 600 : 400, fontFamily: "var(--font-body)",
+                  fontWeight: tab === t.id ? 700 : 400,
                 }}>{t.label}</button>
               ))}
             </div>
@@ -5717,16 +5694,16 @@ export default function App() {
             {/* Centros con ingreso de datos pendiente — últimas 3 semanas epidemiológicas */}
             <div style={{
               background: totalPendientesDashboard ? "#FFF8E1" : P.verdeLight,
-              border: `1px solid ${totalPendientesDashboard ? "#93641F" : P.verde}`,
-              borderRadius: 4, padding: "16px 20px", marginBottom: 18,
+              border: `1px solid ${totalPendientesDashboard ? "#ffc107" : P.verde}`,
+              borderRadius: 2, padding: "16px 20px", marginBottom: 18,
             }}>
               <div style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: totalPendientesDashboard ? 14 : 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: totalPendientesDashboard ? "#9C3B2E" : "#3D6B4A" }}>{totalPendientesDashboard ? "Pendiente" : "Al día"}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: totalPendientesDashboard ? "#C0392B" : "#1A7A4A" }}>{totalPendientesDashboard ? "Pendiente" : "Al día"}</div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: totalPendientesDashboard ? "#5C3F14" : P.verde }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: totalPendientesDashboard ? "#856404" : P.verde }}>
                     Ingreso de Datos Pendiente — Últimas 5 Semanas Epidemiológicas
                   </div>
-                  <div style={{ fontSize: 12, color: totalPendientesDashboard ? "#5C3F14" : P.verde, marginTop: 4 }}>
+                  <div style={{ fontSize: 12, color: totalPendientesDashboard ? "#856404" : P.verde, marginTop: 4 }}>
                     {totalPendientesDashboard
                       ? `Hay establecimientos con registros pendientes en las últimas 5 semanas epidemiológicas.`
                       : `Todos los establecimientos están al día en las últimas 5 semanas epidemiológicas.`}
@@ -5740,9 +5717,9 @@ export default function App() {
                     <div key={se} style={{
                       background: pendientes.length ? "#fff" : "transparent",
                       border: pendientes.length ? `1px solid ${P.border}` : "none",
-                      borderRadius: 3, padding: pendientes.length ? "10px 12px" : 0,
+                      borderRadius: 8, padding: pendientes.length ? "10px 12px" : 0,
                     }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: pendientes.length ? "#5C3F14" : P.verde, marginBottom: pendientes.length ? 8 : 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: pendientes.length ? "#856404" : P.verde, marginBottom: pendientes.length ? 8 : 0 }}>
                         {pendientes.length
                           ? <>La <b>{se}</b>{se === seActualDashboard ? " (actual)" : ""} tiene registros pendientes:</>
                           : <>La <b>{se}</b>{se === seActualDashboard ? " (actual)" : ""} está completa</>}
@@ -5751,8 +5728,8 @@ export default function App() {
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                           {pendientes.map(e => (
                             <span key={e} style={{
-                              background: "#F3EAD8", border: "1px solid #93641F", borderRadius: 2,
-                              padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "#5C3F14"
+                              background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 2,
+                              padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "#856404"
                             }}>
                               {e}
                             </span>
@@ -5766,8 +5743,8 @@ export default function App() {
             </div>
 
             {/* Filtros */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: "14px 18px", marginBottom: 22, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em", alignSelf: "center", marginRight: 4 }}>Filtros</div>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: "14px 18px", marginBottom: 22, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, alignSelf: "center", marginRight: 4 }}>Filtros</div>
               {[
                 { label: "Polo", options: POLOS, val: filtroPolo, set: setFiltroPolo },
                 { label: "Semana Epidemiológica", options: semanas, val: filtroSemana, set: setFiltroSemana },
@@ -5777,7 +5754,7 @@ export default function App() {
                   <div style={{ fontSize: 10, color: P.muted, marginBottom: 4, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.4px" }}>{f.label}</div>
                   <select value={f.val} onChange={e => f.set(e.target.value)} style={{
                     background: P.azulLight, color: P.azulDark, border: `1px solid ${P.azulMid}`,
-                    borderRadius: 3, padding: "7px 12px", fontSize: 13, cursor: "pointer", fontWeight: 600
+                    borderRadius: 2, padding: "7px 12px", fontSize: 13, cursor: "pointer", fontWeight: 600
                   }}>
                     {f.options.map(o => <option key={o}>{o}</option>)}
                   </select>
@@ -5793,28 +5770,28 @@ export default function App() {
               {[
                 { label: "Demanda Total",    val: kpis.demanda,            color: P.azul,    bg: P.azulLight },
                 { label: "Atendidos",         val: kpis.atendidos,          color: P.verde,   bg: P.verdeLight },
-                { label: "Respiratorias",     val: kpis.respiratorias,      color: P.amber,   bg: "#F3EAD8" },
+                { label: "Respiratorias",     val: kpis.respiratorias,      color: P.amber,   bg: "#FEF3C7" },
                 { label: "Abandonos",         val: kpis.abandonos,          color: P.rojo,    bg: P.rojoLight },
-                { label: "Derivaciones",      val: kpis.derivaciones,       color: "#6B4E76", bg: "#EDE6EF" },
+                { label: "Derivaciones",      val: kpis.derivaciones,       color: "#7B3FA0", bg: "#F3E8FF" },
                 { label: "Tasa Abandono",     val: `${kpis.tasaAbandono}%`, color: P.rojo,    bg: P.rojoLight },
-                { label: "% Respiratorio",    val: `${kpis.tasaResp}%`,     color: P.amber,   bg: "#F3EAD8" },
-                { label: "T° Espera Prom.",   val: `${kpis.promEspera} min`,color: "#3E5C6E", bg: "#E7EDEF" },
+                { label: "% Respiratorio",    val: `${kpis.tasaResp}%`,     color: P.amber,   bg: "#FEF3C7" },
+                { label: "T° Espera Prom.",   val: `${kpis.promEspera} min`,color: "#1A7A9A", bg: "#E0F4FA" },
               ].map(k => (
-                <div key={k.label} style={{ background: "#fff", border: `1px solid ${P.border}`, borderTop: `3px solid ${k.color}`, borderRadius: 3, padding: "13px 15px" }}>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 22, fontWeight: 600, color: P.text }}>{k.val}</div>
-                  <div style={{ fontSize: 10, color: P.muted, marginTop: 4, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>{k.label}</div>
+                <div key={k.label} style={{ background: k.bg, border: `1px solid ${P.border}`, borderLeft: `4px solid ${k.color}`, borderRadius: 2, padding: "14px 16px" }}>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: k.color }}>{k.val}</div>
+                  <div style={{ fontSize: 11, color: P.muted, marginTop: 3, fontWeight: 600 }}>{k.label}</div>
                 </div>
               ))}
             </div>
 
             {/* Absorción de demanda por establecimiento */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: 18, marginBottom: 14 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: 18, marginBottom: 12 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 14, flexWrap: "wrap" }}>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>Absorción de la Demanda por Establecimiento</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, textTransform: "uppercase", letterSpacing: "0.06em" }}>Absorción de la Demanda por Establecimiento</div>
                   <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Porcentaje de demanda que representa cada establecimiento sobre el total de la red filtrada</div>
                 </div>
-                <div style={{ background: P.azulLight, border: `1px solid ${P.azulMid}`, borderRadius: 3, padding: "8px 12px", textAlign: "right" }}>
+                <div style={{ background: P.azulLight, border: `1px solid ${P.azulMid}`, borderRadius: 8, padding: "8px 12px", textAlign: "right" }}>
                   <div style={{ fontSize: 10, color: P.muted, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.4px" }}>Total red</div>
                   <div style={{ fontSize: 18, color: P.azulDark, fontWeight: 800 }}>{kpis.demanda.toLocaleString("es-CL")}</div>
                 </div>
@@ -5831,7 +5808,7 @@ export default function App() {
                       <XAxis type="number" domain={[0, 100]} tickFormatter={v => `${v}%`} tick={{ fontSize: 11, fill: P.muted }} />
                       <YAxis type="category" dataKey="establecimiento" width={142} tick={{ fontSize: 11, fill: P.text }} />
                       <Tooltip
-                        contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 3, fontSize: 12 }}
+                        contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 8, fontSize: 12 }}
                         formatter={(value, name, props) => {
                           if (name === "Absorción") return [`${value}%`, name];
                           return [props.payload.demanda.toLocaleString("es-CL"), "Demanda"];
@@ -5841,10 +5818,10 @@ export default function App() {
                       <Bar dataKey="absorcion" name="Absorción" fill={P.azul} radius={[0, 6, 6, 0]} barSize={18} />
                     </BarChart>
                   </ResponsiveContainer>
-                  <div style={{ border: `1px solid ${P.border}`, borderRadius: 3, overflow: "auto", alignSelf: "stretch", WebkitOverflowScrolling: "touch" }}>
+                  <div style={{ border: `1px solid ${P.border}`, borderRadius: 2, overflow: "auto", alignSelf: "stretch", WebkitOverflowScrolling: "touch" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 320 }}>
                       <thead>
-                        <tr style={{ background: P.azulDark }}>
+                        <tr style={{ background: P.azulDark, letterSpacing: "0.04em", fontSize: 11 }}>
                           {["Establecimiento", "Demanda", "% Red", "Atendidos"].map(h => (
                             <th key={h} style={{ padding: "10px 12px", textAlign: h === "Establecimiento" ? "left" : "right", color: "#fff", fontWeight: 700, whiteSpace: "nowrap" }}>{h}</th>
                           ))}
@@ -5856,7 +5833,7 @@ export default function App() {
                             <td style={{ ...tdS, whiteSpace: "normal", fontWeight: 700 }}>{r.establecimiento}</td>
                             <td style={{ ...tdS, textAlign: "right", color: P.azul, fontWeight: 800 }}>{r.demanda.toLocaleString("es-CL")}</td>
                             <td style={{ ...tdS, textAlign: "right" }}>
-                              <span style={{ background: P.verdeLight, color: P.verde, borderRadius: 2, padding: "3px 9px", fontWeight: 600, fontFamily: "var(--font-mono)" }}>{r.absorcion.toFixed(1)}%</span>
+                              <span style={{ background: P.verdeLight, color: P.verde, borderRadius: 20, padding: "3px 9px", fontWeight: 800 }}>{r.absorcion.toFixed(1)}%</span>
                             </td>
                             <td style={{ ...tdS, textAlign: "right", color: P.verde, fontWeight: 700 }}>{r.atendidos.toLocaleString("es-CL")}</td>
                           </tr>
@@ -5873,9 +5850,9 @@ export default function App() {
             </div>
 
             {/* ── Atenciones totales por establecimiento ─────── */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: 18, marginBottom: 14 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: 18, marginBottom: 12 }}>
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>Atenciones Totales por Establecimiento</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, textTransform: "uppercase", letterSpacing: "0.06em" }}>Atenciones Totales por Establecimiento</div>
                 <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Suma de pacientes atendidos según filtros aplicados</div>
               </div>
               {dataAbsorcionDemanda.length > 0 ? (
@@ -5890,17 +5867,17 @@ export default function App() {
                       <XAxis type="number" tick={{ fontSize: 11, fill: P.muted }} tickFormatter={v => v.toLocaleString("es-CL")} />
                       <YAxis type="category" dataKey="establecimiento" width={142} tick={{ fontSize: 11, fill: P.text }} />
                       <Tooltip
-                        contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 3, fontSize: 12 }}
+                        contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 8, fontSize: 12 }}
                         formatter={(val) => [val.toLocaleString("es-CL"), "Atendidos"]}
                         labelFormatter={label => `Establecimiento: ${label}`}
                       />
                       <Bar dataKey="atendidos" name="Atendidos" fill={P.verde} radius={[0,6,6,0]} barSize={18} />
                     </BarChart>
                   </ResponsiveContainer>
-                  <div style={{ border: `1px solid ${P.border}`, borderRadius: 3, overflow: "auto", alignSelf: "stretch", WebkitOverflowScrolling: "touch" }}>
+                  <div style={{ border: `1px solid ${P.border}`, borderRadius: 2, overflow: "auto", alignSelf: "stretch", WebkitOverflowScrolling: "touch" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 320 }}>
                       <thead>
-                        <tr style={{ background: P.azulDark }}>
+                        <tr style={{ background: P.azulDark, letterSpacing: "0.04em", fontSize: 11 }}>
                           {["Establecimiento", "Atendidos", "Respiratorias", "% Resp."].map(h => (
                             <th key={h} style={{ padding: "10px 12px", textAlign: h === "Establecimiento" ? "left" : "right", color: "#fff", fontWeight: 700, whiteSpace: "nowrap" }}>{h}</th>
                           ))}
@@ -5919,7 +5896,7 @@ export default function App() {
                                 <td style={{ ...tdS, textAlign: "right", color: P.verde, fontWeight: 800 }}>{r.atendidos.toLocaleString("es-CL")}</td>
                                 <td style={{ ...tdS, textAlign: "right", color: P.amber, fontWeight: 700 }}>{totalResp.toLocaleString("es-CL")}</td>
                                 <td style={{ ...tdS, textAlign: "right" }}>
-                                  <span style={{ background: P.azulLight, color: P.amber, borderRadius: 2, padding: "3px 9px", fontWeight: 600, fontFamily: "var(--font-mono)" }}>{pctResp}%</span>
+                                  <span style={{ background: "#fff8e1", color: P.amber, borderRadius: 20, padding: "3px 9px", fontWeight: 800 }}>{pctResp}%</span>
                                 </td>
                               </tr>
                             );
@@ -5938,13 +5915,13 @@ export default function App() {
                         {/* ── ALERTA TIEMPO ESPERA ────────────────────── */}
             {Number(kpis.promEspera) > 180 && (
               <div style={{
-                background: "#F2E7E2", border: "2px solid #9C3B2E", borderRadius: 3,
+                background: "#fdecea", border: "2px solid #C0392B", borderRadius: 8,
                 padding: "14px 20px", marginBottom: 14,
                 display: "flex", alignItems: "center", gap: 14,
               }}>
-                <div style={{ width: 4, alignSelf: "stretch", background: "#9C3B2E", borderRadius: 2, flexShrink: 0 }} />
+                <div style={{ width: 4, alignSelf: "stretch", background: "#C0392B", borderRadius: 2, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: "#9C3B2E" }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#C0392B" }}>
                     Alerta — Tiempo de Espera Promedio
                   </div>
                   <div style={{ fontSize: 12, color: "#922B21", marginTop: 3 }}>
@@ -5958,9 +5935,9 @@ export default function App() {
             {(() => {
               const ESTAMENTOS = [
                 { key: "refuerzo_medico",         label: "Médico",         color: "#1A3A6B" },
-                { key: "refuerzo_enfermera",       label: "Enfermera",      color: "#9C3B2E" },
-                { key: "refuerzo_tens",            label: "TENS",           color: "#3D6B4A" },
-                { key: "refuerzo_kinesiologo",     label: "Kinesiólogo",    color: "#93641F" },
+                { key: "refuerzo_enfermera",       label: "Enfermera",      color: "#C0392B" },
+                { key: "refuerzo_tens",            label: "TENS",           color: "#1A7A4A" },
+                { key: "refuerzo_kinesiologo",     label: "Kinesiólogo",    color: "#B45309" },
                 { key: "refuerzo_administrativo",  label: "Administrativo", color: "#6B3FA0" },
               ];
               const conRef = filtrados.filter(r => r.tiene_refuerzo);
@@ -5975,15 +5952,15 @@ export default function App() {
                 });
               });
               return (
-                <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: 18, marginBottom: 14 }}>
+                <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: 18, marginBottom: 12 }}>
                   <div style={{ marginBottom: 12 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>Refuerzos por Establecimiento</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, textTransform: "uppercase", letterSpacing: "0.06em" }}>Refuerzos por Establecimiento</div>
                     <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Establecimientos con refuerzo de recursos humanos en el período filtrado</div>
                   </div>
                   <div style={{ overflowX: "auto" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 500 }}>
                       <thead>
-                        <tr style={{ background: P.azulDark }}>
+                        <tr style={{ background: P.azulDark, letterSpacing: "0.04em", fontSize: 11 }}>
                           <th style={{ padding: "8px 12px", color: "#fff", fontWeight: 700, textAlign: "left" }}>Establecimiento</th>
                           <th style={{ padding: "8px 10px", color: "#fff", fontWeight: 700, textAlign: "center" }}>Días c/ Refuerzo</th>
                           {ESTAMENTOS.map(e => (
@@ -6001,7 +5978,7 @@ export default function App() {
                               return (
                                 <td key={label} style={{ padding: "8px 10px", textAlign: "center", borderBottom: `1px solid ${P.border}` }}>
                                   {tiene
-                                    ? <span style={{ background: color, color: "#fff", borderRadius: 2, padding: "3px 12px", fontWeight: 600, fontSize: 13 }}>Sí</span>
+                                    ? <span style={{ background: color, color: "#fff", borderRadius: 20, padding: "3px 12px", fontWeight: 700, fontSize: 13 }}>Sí</span>
                                     : <span style={{ color: P.grisMid }}>—</span>
                                   }
                                 </td>
@@ -6017,10 +5994,10 @@ export default function App() {
             })()}
 
             {/* Gráfico comportamiento diario — ancho completo */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: 18, marginBottom: 14 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: 18, marginBottom: 12 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>Comportamiento Diario de Variables</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, textTransform: "uppercase", letterSpacing: "0.06em" }}>Comportamiento Diario de Variables</div>
                   <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Suma de atenciones por día según filtros aplicados</div>
                 </div>
               </div>
@@ -6030,13 +6007,13 @@ export default function App() {
                     <CartesianGrid strokeDasharray="3 3" stroke={P.grisMid} />
                     <XAxis dataKey="dia" tick={{ fontSize: 10, fill: P.muted }} interval={dataXDia.length > 30 ? Math.floor(dataXDia.length / 8) : 0} angle={dataXDia.length > 20 ? -30 : 0} textAnchor={dataXDia.length > 20 ? "end" : "middle"} height={dataXDia.length > 20 ? 45 : 30} />
                     <YAxis tick={{ fontSize: 11, fill: P.muted }} width={45} />
-                    <Tooltip contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 3, fontSize: 11 }} />
+                    <Tooltip contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 8, fontSize: 11 }} />
                     <Legend wrapperStyle={{ fontSize: 10 }} />
                     <Line type="monotone" dataKey="demanda"       name="Demanda Total"     stroke={P.azul}    strokeWidth={2} dot={dataXDia.length > 30 ? false : { r: 3 }} activeDot={{ r: 5 }} />
                     <Line type="monotone" dataKey="atendidos"     name="Atendidos"         stroke={P.verde}   strokeWidth={2} dot={dataXDia.length > 30 ? false : { r: 3 }} activeDot={{ r: 5 }} />
                     <Line type="monotone" dataKey="respiratorias" name="Respiratorias"     stroke={P.amber}   strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
                     <Line type="monotone" dataKey="abandonos"     name="Abandonos"         stroke={P.rojo}    strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="derivaciones"  name="Derivaciones"      stroke="#6B4E76"   strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} strokeDasharray="5 3" />
+                    <Line type="monotone" dataKey="derivaciones"  name="Derivaciones"      stroke="#7B3FA0"   strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} strokeDasharray="5 3" />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
@@ -6047,9 +6024,9 @@ export default function App() {
             </div>
 
             {/* Gráfico: Atenciones diarias vs % Respiratorio */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: 18, marginBottom: 14 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: 18, marginBottom: 12 }}>
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>Atenciones Diarias vs % Respiratorio</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, textTransform: "uppercase", letterSpacing: "0.06em" }}>Atenciones Diarias vs % Respiratorio</div>
                 <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Barras: total atendidos por día · Línea: porcentaje de atenciones respiratorias</div>
               </div>
               {dataXDia.length > 0 ? (
@@ -6060,7 +6037,7 @@ export default function App() {
                     <YAxis yAxisId="abs" orientation="left" tick={{ fontSize: 11, fill: P.muted }} label={{ value: "Atendidos", angle: -90, position: "insideLeft", fontSize: 10, fill: P.muted }} />
                     <YAxis yAxisId="pct" orientation="right" tickFormatter={v => `${v}%`} domain={[0, 100]} tick={{ fontSize: 11, fill: P.amber }} label={{ value: "%Resp.", angle: 90, position: "insideRight", fontSize: 10, fill: P.amber }} />
                     <Tooltip
-                      contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 3, fontSize: 12 }}
+                      contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 8, fontSize: 12 }}
                       formatter={(value, name) => name === "% Respiratorio" ? `${value}%` : value}
                     />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -6085,9 +6062,9 @@ export default function App() {
             </div>
 
             {/* Gráfico: Atendidos vs Respiratorias por semana + acumulado */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: 18, marginBottom: 14 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: 18, marginBottom: 12 }}>
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>Atenciones Totales v/s Respiratorias por Semana · Acumulado</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, textTransform: "uppercase", letterSpacing: "0.06em" }}>Atenciones Totales v/s Respiratorias por Semana · Acumulado</div>
                 <div style={{ fontSize: 11, color: P.muted, marginTop: 2 }}>Barras: valores semanales · Líneas: acumulado progresivo</div>
               </div>
               {dataRespAcum.length > 0 ? (
@@ -6097,12 +6074,12 @@ export default function App() {
                     <XAxis dataKey="semana" tick={{ fontSize: 11, fill: P.muted }} />
                     <YAxis yAxisId="semanal" orientation="left" tick={{ fontSize: 11, fill: P.muted }} label={{ value: "Semanal", angle: -90, position: "insideLeft", fontSize: 10, fill: P.muted }} />
                     <YAxis yAxisId="acum" orientation="right" tick={{ fontSize: 11, fill: P.muted }} label={{ value: "Acumulado", angle: 90, position: "insideRight", fontSize: 10, fill: P.muted }} />
-                    <Tooltip contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 3, fontSize: 12 }} />
+                    <Tooltip contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 8, fontSize: 12 }} />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
                     <Bar yAxisId="semanal" dataKey="atendidos"     name="Atendidos (sem.)"     fill={P.azul}  radius={[4,4,0,0]} opacity={0.85} />
                     <Bar yAxisId="semanal" dataKey="respiratorias" name="Respiratorias (sem.)"  fill={P.amber} radius={[4,4,0,0]} opacity={0.85} />
                     <Line yAxisId="acum" type="monotone" dataKey="acumAtendidos"     name="Acum. Atendidos"     stroke={P.azulDark}  strokeWidth={2.5} dot={{ r: 4 }} strokeDasharray="6 2" />
-                    <Line yAxisId="acum" type="monotone" dataKey="acumRespiratorias" name="Acum. Respiratorias"  stroke="#93641F"     strokeWidth={2.5} dot={{ r: 4 }} strokeDasharray="6 2" />
+                    <Line yAxisId="acum" type="monotone" dataKey="acumRespiratorias" name="Acum. Respiratorias"  stroke="#B45309"     strokeWidth={2.5} dot={{ r: 4 }} strokeDasharray="6 2" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -6114,7 +6091,7 @@ export default function App() {
 
             {/* Gráficos fila 2 */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 18 }}>
-              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: 18 }}>
+              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: 16 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 14, color: P.azulDark }}>Demanda vs Atendidos por Semana Epidemiológica</div>
                 {dataXSemana.length > 0 ? (
                   <ResponsiveContainer width="100%" height={210}>
@@ -6122,7 +6099,7 @@ export default function App() {
                       <CartesianGrid strokeDasharray="3 3" stroke={P.grisMid} />
                       <XAxis dataKey="semana" tick={{ fontSize: 11, fill: P.muted }} />
                       <YAxis tick={{ fontSize: 11, fill: P.muted }} />
-                      <Tooltip contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 3 }} />
+                      <Tooltip contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 8 }} />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
                       <Bar dataKey="demanda" name="Demanda" fill={P.azul} radius={[4,4,0,0]} />
                       <Bar dataKey="atendidos" name="Atendidos" fill={P.verde} radius={[4,4,0,0]} />
@@ -6130,12 +6107,12 @@ export default function App() {
                   </ResponsiveContainer>
                 ) : <div style={{ color: P.muted, fontSize: 13, padding: 20 }}>Sin datos</div>}
               </div>
-              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: 18 }}>
+              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: 16 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4, color: P.azulDark }}>Destino de Derivaciones</div>
                 <div style={{ fontSize: 11, color: P.muted, marginBottom: 14 }}>Total de derivaciones por hospital</div>
                 {dataDerivaciones.length > 0 ? (() => {
                   const total = dataDerivaciones.reduce((a, d) => a + d.value, 0);
-                  const COLORS = ["#1A3A6B", "#9C3B2E", "#3D6B4A", "#93641F"];
+                  const COLORS = ["#1A3A6B", "#C0392B", "#1A7A4A", "#B45309"];
                   return (
                     <div>
                       {/* Donut chart */}
@@ -6165,7 +6142,7 @@ export default function App() {
                             ))}
                           </Pie>
                           <Tooltip
-                            contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 3, fontSize: 12 }}
+                            contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 8, fontSize: 12 }}
                             formatter={(val, name) => [`${val} (${((val/total)*100).toFixed(1)}%)`, name]}
                           />
                         </PieChart>
@@ -6201,15 +6178,15 @@ export default function App() {
         )}
 
         {tab === "dashboard" && <>
-          <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: "16px 20px", marginTop: 16 }}>
+          <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: "14px 20px", marginTop: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: mostrarComparador ? 20 : 0 }}>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>Comparación de Períodos</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: P.azulDark }}>Comparación de Períodos</div>
                 <div style={{ fontSize: 12, color: P.muted }}>Análisis comparativo entre dos períodos epidemiológicos seleccionados</div>
               </div>
               <button onClick={() => setMostrarComparador(v => !v)} style={{
                 background: mostrarComparador ? P.azulLight : P.azul, color: mostrarComparador ? P.azul : "#fff",
-                border: `1px solid ${P.azul}`, borderRadius: 3, padding: "7px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer"
+                border: `1px solid ${P.azul}`, borderRadius: 8, padding: "7px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer"
               }}>{mostrarComparador ? "Ocultar" : "Abrir comparador"}</button>
             </div>
             {mostrarComparador && <ComparadorPeriodos
@@ -6236,10 +6213,10 @@ export default function App() {
         {tab === "formulario" && (
           <div style={{ maxWidth: 740 }}>
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 17, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>{editId ? "Editar registro" : "Nuevo registro"}</div>
+              <div style={{ fontSize: 17, fontWeight: 800, color: P.azulDark }}>{editId ? "✏️ Editar Registro" : "➕ Nuevo Registro"}</div>
               <div style={{ fontSize: 12, color: P.muted, marginTop: 4 }}>Los campos marcados con * son obligatorios</div>
             </div>
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 4, padding: 26 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: 26 }}>
               
               {/* Identificación */}
               <div style={{ fontSize: 12, fontWeight: 800, color: P.azul, borderBottom: `2px solid ${P.azulMid}`, paddingBottom: 6, marginBottom: 16, textTransform: "uppercase", letterSpacing: "0.5px" }}>
@@ -6289,7 +6266,7 @@ export default function App() {
               <div style={{ fontSize: 12, fontWeight: 800, color: P.azul, borderBottom: `2px solid ${P.azulMid}`, paddingBottom: 6, marginBottom: 16, textTransform: "uppercase", letterSpacing: "0.5px" }}>
                 Refuerzo de Recursos Humanos
               </div>
-              <div style={{ background: P.azulLight, border: `1px solid ${P.azulMid}`, borderRadius: 9, padding: 16, marginBottom: 20 }}>
+              <div style={{ background: P.azulLight, border: `1px solid ${P.azulMid}`, borderRadius: 2, padding: 16, marginBottom: 20 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                   <input type="checkbox" name="tiene_refuerzo" id="refuerzo" checked={form.tiene_refuerzo} onChange={handleChange}
                     style={{ width: 16, height: 16, accentColor: P.verde }} />
@@ -6314,7 +6291,7 @@ export default function App() {
                           display: "flex", alignItems: "center", justifyContent: "space-between",
                           background: form[key] ? "#d4edda" : "#fff",
                           border: `1.5px solid ${form[key] ? P.verde : P.azulMid}`,
-                          borderRadius: 3, padding: "8px 14px", transition: "all 0.15s"
+                          borderRadius: 8, padding: "8px 14px", transition: "all 0.15s"
                         }}>
                           <label style={{ fontSize: 13, fontWeight: 600, color: P.azulDark, cursor: "pointer", flex: 1 }}
                             htmlFor={key}>{label}</label>
@@ -6348,7 +6325,7 @@ export default function App() {
 
               <div style={{ display: "flex", gap: 10 }}>
                 <button onClick={handleSubmit} style={{
-                  background: P.azul, color: "#fff", border: "none", borderRadius: 3,
+                  background: P.azul, color: "#fff", border: "none", borderRadius: 8,
                   padding: "10px 28px", cursor: "pointer", fontSize: 14, fontWeight: 700
                 }}>
                   {editId ? "Actualizar Registro" : "Guardar Registro"}
@@ -6356,7 +6333,7 @@ export default function App() {
                 {editId && (
                   <button onClick={() => { setForm(EMPTY_FORM); setEditId(null); }} style={{
                     background: P.grisMid, color: P.text, border: "none",
-                    borderRadius: 3, padding: "10px 18px", cursor: "pointer", fontSize: 14
+                    borderRadius: 8, padding: "10px 18px", cursor: "pointer", fontSize: 14
                   }}>Cancelar</button>
                 )}
               </div>
@@ -6368,7 +6345,7 @@ export default function App() {
         {tab === "tabla" && (
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
-              <div style={{ fontSize: 16, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>Registros ({filtrados.length})</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: P.azulDark }}>Registros ({filtrados.length})</div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <select value={filtroPolo} onChange={e => setFiltroPolo(e.target.value)} style={{ ...inpS, width: "auto" }}>
                   {POLOS.map(p => <option key={p}>{p}</option>)}
@@ -6381,11 +6358,11 @@ export default function App() {
                 </select>
                 <button onClick={() => { setTab("formulario"); setForm(EMPTY_FORM); setEditId(null); }} style={{
                   background: P.azul, color: "#fff", border: "none",
-                  borderRadius: 3, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 700
+                  borderRadius: 2, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 700
                 }}>+ Nuevo</button>
               </div>
             </div>
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 4, overflow: "hidden" }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, overflow: "hidden" }}>
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                   <thead>
@@ -6403,33 +6380,31 @@ export default function App() {
                       <tr key={r.id} style={{ background: i % 2 === 0 ? "#fff" : P.bg }}>
                         <td style={tdS}>{r.fecha}</td>
                         <td style={tdS}>
-                          <span style={{ background: P.azulLight, color: P.azul, padding: "2px 9px", borderRadius: 2, fontSize: 11, fontWeight: 600, fontFamily: "var(--font-mono)" }}>{r.semana_epi}</span>
+                          <span style={{ background: P.azulLight, color: P.azul, padding: "2px 9px", borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{r.semana_epi}</span>
                         </td>
                         <td style={{ ...tdS, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>{r.establecimiento}</td>
                         <td style={{ ...tdS, color: P.azul, fontWeight: 700 }}>{r.demanda_total}</td>
                         <td style={{ ...tdS, color: P.verde, fontWeight: 700 }}>{r.pacientes_atendidos}</td>
                         <td style={{ ...tdS, color: P.amber }}>{r.atenciones_respiratorias}</td>
                         <td style={tdS}>{r.abandonos}</td>
-                        <td style={{ ...tdS, color: "#6B4E76", fontWeight: 600 }}>{r.derivaciones_hec || "—"}</td>
-                        <td style={{ ...tdS, color: "#6B4E76", fontWeight: 600 }}>{r.derivaciones_hcsba || "—"}</td>
-                        <td style={{ ...tdS, color: "#6B4E76", fontWeight: 600 }}>{r.derivaciones_huap || "—"}</td>
-                        <td style={{ ...tdS, color: "#3E5C6E", fontWeight: 600 }}>{r.tiempo_espera ? `${r.tiempo_espera} min` : "—"}</td>
+                        <td style={{ ...tdS, color: "#7B3FA0", fontWeight: 600 }}>{r.derivaciones_hec || "—"}</td>
+                        <td style={{ ...tdS, color: "#7B3FA0", fontWeight: 600 }}>{r.derivaciones_hcsba || "—"}</td>
+                        <td style={{ ...tdS, color: "#7B3FA0", fontWeight: 600 }}>{r.derivaciones_huap || "—"}</td>
+                        <td style={{ ...tdS, color: "#1A7A9A", fontWeight: 600 }}>{r.tiempo_espera ? `${r.tiempo_espera} min` : "—"}</td>
                         <td style={tdS}>
                           {r.tiene_refuerzo
-                            ? <span style={{ background: P.verdeLight, color: P.verde, padding: "2px 9px", borderRadius: 2, fontSize: 11, fontWeight: 600 }}>{r.tipo_refuerzo}</span>
+                            ? <span style={{ background: P.verdeLight, color: P.verde, padding: "2px 9px", borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{r.tipo_refuerzo}</span>
                             : <span style={{ color: P.grisMid }}>—</span>}
                         </td>
                         <td style={tdS}>
                           <div style={{ display: "flex", gap: 5 }}>
-                            <button onClick={() => handleEdit(r)} aria-label="Editar" style={{ background: P.azulLight, color: P.azul, border: "none", borderRadius: 3, padding: "4px 8px", cursor: "pointer", display: "flex", alignItems: "center" }}>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                            </button>
+                            <button onClick={() => handleEdit(r)} style={{ background: P.azulLight, color: P.azul, border: "none", borderRadius: 5, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>✏️</button>
                             {deleteConfirm === r.id
                               ? <span style={{ display: "flex", gap: 4 }}>
-                                  <button onClick={() => handleDelete(r.id)} style={{ background: P.rojo, color: "#fff", border: "none", borderRadius: 2, padding: "4px 8px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>Confirmar</button>
-                                  <button onClick={() => setDeleteConfirm(null)} aria-label="Cancelar" style={{ background: P.grisMid, color: P.text, border: "none", borderRadius: 3, padding: "4px 7px", cursor: "pointer", display: "flex", alignItems: "center" }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+                                  <button onClick={() => handleDelete(r.id)} style={{ background: P.rojo, color: "#fff", border: "none", borderRadius: 5, padding: "4px 8px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>Confirmar</button>
+                                  <button onClick={() => setDeleteConfirm(null)} style={{ background: P.grisMid, color: P.text, border: "none", borderRadius: 5, padding: "4px 8px", cursor: "pointer", fontSize: 11 }}>✕</button>
                                 </span>
-                              : <button onClick={() => setDeleteConfirm(r.id)} style={{ background: P.rojoLight, color: P.rojo, border: "none", borderRadius: 2, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>🗑</button>
+                              : <button onClick={() => setDeleteConfirm(r.id)} style={{ background: P.rojoLight, color: P.rojo, border: "none", borderRadius: 5, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>🗑</button>
                             }
                           </div>
                         </td>
@@ -6446,14 +6421,14 @@ export default function App() {
         {tab === "ambulancias" && (
           <div>
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 17, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>Retenciones de Ambulancias</div>
+              <div style={{ fontSize: 17, fontWeight: 800, color: P.azulDark }}>Retenciones de Ambulancias</div>
               <div style={{ fontSize: 12, color: P.muted, marginTop: 4 }}>
                 Registra el tiempo que una ambulancia permanece retenida en el establecimiento al momento del traslado. Completa hasta {AMBULANCIA_FILAS} líneas y guarda en un solo paso.
               </div>
             </div>
 
             {/* Formulario rápido de 5 líneas */}
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 4, padding: 22, marginBottom: 24 }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: 22, marginBottom: 24 }}>
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 680 }}>
                   <thead>
@@ -6501,12 +6476,12 @@ export default function App() {
               </div>
               <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
                 <button onClick={handleSubmitAmbulancias} style={{
-                  background: P.azul, color: "#fff", border: "none", borderRadius: 3,
+                  background: P.azul, color: "#fff", border: "none", borderRadius: 8,
                   padding: "10px 28px", cursor: "pointer", fontSize: 14, fontWeight: 700
-                }}>Guardar líneas</button>
+                }}>✅ Guardar Líneas</button>
                 <button onClick={() => setFormAmbulancias(Array.from({ length: AMBULANCIA_FILAS }, () => ({ ...EMPTY_AMBULANCIA_ROW })))} style={{
                   background: P.grisMid, color: P.text, border: "none",
-                  borderRadius: 3, padding: "10px 18px", cursor: "pointer", fontSize: 14
+                  borderRadius: 8, padding: "10px 18px", cursor: "pointer", fontSize: 14
                 }}>Limpiar</button>
               </div>
             </div>
@@ -6515,28 +6490,28 @@ export default function App() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 14, marginBottom: 22 }}>
               {[
                 { label: "Total Retenciones", val: kpisAmbulancias.total, color: P.azul, bg: P.azulLight },
-                { label: "T° Retención Prom.", val: `${kpisAmbulancias.promedio} min`, color: "#3E5C6E", bg: "#E7EDEF" },
-                { label: "T° Retención Total", val: `${kpisAmbulancias.totalMin} min`, color: P.amber, bg: "#F3EAD8" },
+                { label: "T° Retención Prom.", val: `${kpisAmbulancias.promedio} min`, color: "#1A7A9A", bg: "#E0F4FA" },
+                { label: "T° Retención Total", val: `${kpisAmbulancias.totalMin} min`, color: P.amber, bg: "#FEF3C7" },
                 { label: "Establecimiento c/ más retenciones", val: kpisAmbulancias.establecimientoTop, color: P.rojo, bg: P.rojoLight },
               ].map(k => (
-                <div key={k.label} style={{ background: "#fff", border: `1px solid ${P.border}`, borderTop: `3px solid ${k.color}`, borderRadius: 3, padding: "13px 15px" }}>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: k.label.includes("Establecimiento") ? 14 : 22, fontWeight: 600, color: P.text }}>{k.val}</div>
-                  <div style={{ fontSize: 10, color: P.muted, marginTop: 4, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>{k.label}</div>
+                <div key={k.label} style={{ background: k.bg, border: `1px solid ${P.border}`, borderLeft: `4px solid ${k.color}`, borderRadius: 2, padding: "14px 16px" }}>
+                  <div style={{ fontSize: k.label.includes("Establecimiento") ? 14 : 22, fontWeight: 800, color: k.color }}>{k.val}</div>
+                  <div style={{ fontSize: 11, color: P.muted, marginTop: 3, fontWeight: 600 }}>{k.label}</div>
                 </div>
               ))}
             </div>
 
             {/* Gráfico por establecimiento */}
             {dataAmbulanciasXEstablecimiento.length > 0 && (
-              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: 18, marginBottom: 22 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em", marginBottom: 14 }}>Retenciones por Establecimiento</div>
+              <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: 16, marginBottom: 22 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14 }}>Retenciones por Establecimiento</div>
                 <ResponsiveContainer width="100%" height={Math.max(220, dataAmbulanciasXEstablecimiento.length * 36)}>
                   <BarChart data={dataAmbulanciasXEstablecimiento} layout="vertical" margin={{ top: 4, right: 28, left: 16, bottom: 4 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={P.grisMid} horizontal={false} />
                     <XAxis type="number" tick={{ fontSize: 11, fill: P.muted }} />
                     <YAxis type="category" dataKey="establecimiento" width={150} tick={{ fontSize: 11, fill: P.text }} />
                     <Tooltip
-                      contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 3, fontSize: 12 }}
+                      contentStyle={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 8, fontSize: 12 }}
                       formatter={(value, name, props) => name === "retenciones"
                         ? [value, "N° Retenciones"]
                         : [`${props.payload.promedioMin} min`, "Promedio"]}
@@ -6549,9 +6524,9 @@ export default function App() {
 
             {/* Tabla de registros */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <div style={{ fontSize: 16, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>Registros de Retención ({registrosAmbulancias.length})</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: P.azulDark }}>Registros de Retención ({registrosAmbulancias.length})</div>
             </div>
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 4, overflow: "hidden" }}>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, overflow: "hidden" }}>
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                   <thead>
@@ -6570,14 +6545,14 @@ export default function App() {
                         <td style={tdS}>{r.fecha}</td>
                         <td style={{ ...tdS, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis" }}>{r.establecimiento}</td>
                         <td style={tdS}>{r.hora_traslado}</td>
-                        <td style={{ ...tdS, color: "#3E5C6E", fontWeight: 700 }}>{r.tiempo_retencion} min</td>
+                        <td style={{ ...tdS, color: "#1A7A9A", fontWeight: 700 }}>{r.tiempo_retencion} min</td>
                         <td style={tdS}>
                           {deleteConfirmAmb === r.id
                             ? <span style={{ display: "flex", gap: 4 }}>
-                                <button onClick={() => handleDeleteAmbulancia(r.id)} style={{ background: P.rojo, color: "#fff", border: "none", borderRadius: 2, padding: "4px 8px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>Confirmar</button>
-                                <button onClick={() => setDeleteConfirmAmb(null)} aria-label="Cancelar" style={{ background: P.grisMid, color: P.text, border: "none", borderRadius: 3, padding: "4px 7px", cursor: "pointer", display: "flex", alignItems: "center" }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+                                <button onClick={() => handleDeleteAmbulancia(r.id)} style={{ background: P.rojo, color: "#fff", border: "none", borderRadius: 5, padding: "4px 8px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>Confirmar</button>
+                                <button onClick={() => setDeleteConfirmAmb(null)} style={{ background: P.grisMid, color: P.text, border: "none", borderRadius: 5, padding: "4px 8px", cursor: "pointer", fontSize: 11 }}>✕</button>
                               </span>
-                            : <button onClick={() => setDeleteConfirmAmb(r.id)} style={{ background: P.rojoLight, color: P.rojo, border: "none", borderRadius: 2, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>🗑</button>
+                            : <button onClick={() => setDeleteConfirmAmb(r.id)} style={{ background: P.rojoLight, color: P.rojo, border: "none", borderRadius: 5, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>🗑</button>
                           }
                         </td>
                       </tr>
@@ -6592,7 +6567,7 @@ export default function App() {
         {/* ── IMPORTAR EXCEL ──────────────────────────────── */}
         {tab === "importar" && (
           <div style={{ maxWidth: 600, margin: "0 auto" }}>
-            <div style={{ fontSize: 20, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em", marginBottom: 6 }}>Importar desde Excel</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: P.azulDark, marginBottom: 6 }}>Importar desde Excel</div>
             <p style={{ color: P.muted, fontSize: 13, marginBottom: 24 }}>
               Cargue el archivo en formato .xlsx correspondiente a la planilla de revisión diaria de atención de urgencias APS. Los registros se incorporan automáticamente a la base de datos.
             </p>
@@ -6612,7 +6587,7 @@ export default function App() {
                 background: importando ? P.grisMid : P.azul,
                 color: "#fff",
                 padding: "14px 32px",
-                borderRadius: 3,
+                borderRadius: 2,
                 fontSize: 15,
                 fontWeight: 700,
                 cursor: importando ? "not-allowed" : "pointer",
@@ -6626,14 +6601,14 @@ export default function App() {
             </div>
 
             {importando && (
-              <div style={{ padding: 16, background: P.azulLight, borderRadius: 3, textAlign: "center", color: P.azul, fontWeight: 700, marginBottom: 16 }}>
+              <div style={{ padding: 16, background: P.azulLight, borderRadius: 2, textAlign: "center", color: P.azul, fontWeight: 700, marginBottom: 16 }}>
                 Procesando archivo, por favor espere...
               </div>
             )}
 
             {importResultado && (
               <div style={{
-                padding: 16, borderRadius: 3, fontWeight: 700, fontSize: 14, marginBottom: 16,
+                padding: 16, borderRadius: 2, fontWeight: 700, fontSize: 14, marginBottom: 16,
                 background: importResultado.ok ? "#d4edda" : "#fde8e8",
                 color: importResultado.ok ? "#155724" : "#721c24",
                 border: `1px solid ${importResultado.ok ? "#c3e6cb" : "#f5c6cb"}`
@@ -6647,8 +6622,8 @@ export default function App() {
               </div>
             )}
 
-            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: 18 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em", marginBottom: 12 }}>Formato esperado del archivo</div>
+            <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: 16 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>Formato esperado del archivo</div>
               {[
                 "Fila 1: Semanas epidemiológicas (SE 01, SE 02…)",
                 "Fila 2: Fechas de cada día (01/01/2026, 02/01/2026…)",
@@ -6689,18 +6664,21 @@ export default function App() {
         )}
 
       <style>{`
-  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
-  * { box-sizing: border-box; }
-  body { margin: 0; font-size: 14px; }
-  input, select, textarea { font-family: inherit; }
-  h1, h2, h3, h4 { margin: 0; font-weight: 600; }
-  button { font-family: inherit; }
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: #F4F6FA; }
-  ::-webkit-scrollbar-thumb { background: #C2D0E4; border-radius: 3px; }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { margin: 0; font-size: 13px; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; background: #F5F5F5; }
+  input, select, textarea, button { font-family: inherit; font-size: inherit; }
+  select { appearance: auto; }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: #F5F5F5; }
+  ::-webkit-scrollbar-thumb { background: #9CA3AF; }
   ::-webkit-scrollbar-thumb:hover { background: #1A3A6B; }
-  table { border-collapse: collapse; }
-  th { font-weight: 600; letter-spacing: 0.02em; }
+  table { border-collapse: collapse; width: 100%; }
+  th { font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; font-size: 11px; }
+  td { font-size: 13px; }
+  button:focus, input:focus, select:focus { outline: 2px solid #1A3A6B; outline-offset: 1px; }
+  a { color: #1A3A6B; }
   @media (max-width: 640px) {
     .nav-desktop { display: none !important; }
     .nav-mobile  { display: block !important; }
@@ -6790,7 +6768,7 @@ function ComparadorPeriodos({ semanasOpts, registros, filtroPolo, filtroEstab, p
     const pct = (((Number(v1)-Number(v2))/Math.abs(Number(v2)))*100).toFixed(1);
     const up = Number(pct) > 0;
     const good = invert ? !up : up;
-    return <span style={{ fontSize: 11, fontWeight: 700, color: good ? "#27ae60" : "#9C3B2E", marginLeft: 6 }}>
+    return <span style={{ fontSize: 11, fontWeight: 700, color: good ? "#27ae60" : "#e74c3c", marginLeft: 6 }}>
       {up ? "▲" : "▼"}{Math.abs(pct)}%
     </span>;
   };
@@ -6819,7 +6797,7 @@ function ComparadorPeriodos({ semanasOpts, registros, filtroPolo, filtroEstab, p
           { label: "Período 1", desde: p1desde, setDesde: setP1desde, hasta: p1hasta, setHasta: setP1hasta, color: "#2980b9" },
           { label: "Período 2", desde: p2desde, setDesde: setP2desde, hasta: p2hasta, setHasta: setP2hasta, color: "#27ae60" },
         ].map(({ label, desde, setDesde, hasta, setHasta, color }) => (
-          <div key={label} style={{ background: P.azulLight, borderRadius: 3, padding: "14px 16px", border: `2px solid ${color}30` }}>
+          <div key={label} style={{ background: P.azulLight, borderRadius: 2, padding: "14px 16px", border: `2px solid ${color}30` }}>
             <div style={{ fontSize: 13, fontWeight: 800, color, marginBottom: 10 }}>{label}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               <span style={{ fontSize: 12, color: P.muted }}>Desde</span>
@@ -6865,7 +6843,7 @@ function ComparadorPeriodos({ semanasOpts, registros, filtroPolo, filtroEstab, p
         </div>
 
         {/* Gráfico */}
-        <div style={{ background: P.azulLight, borderRadius: 4, padding: "16px 8px", marginBottom: 20 }}>
+        <div style={{ background: P.azulLight, borderRadius: 2, padding: "16px 8px", marginBottom: 20 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: P.azulDark, marginBottom: 12, paddingLeft: 8 }}>
             {metActual?.label} — comparación semana a semana
           </div>
@@ -6908,7 +6886,7 @@ function ComparadorPeriodos({ semanasOpts, registros, filtroPolo, filtroEstab, p
 
         {/* Tabla resumen */}
         <div style={{ overflowX: "auto" }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em", marginBottom: 10 }}>Resumen total de cada período</div>
+          <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, marginBottom: 10 }}>Resumen total de cada período</div>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>
@@ -6963,33 +6941,33 @@ function ResumenAmbulancias({ registrosAmbulancias, filtroEstab, filtroPolo, POL
   });
 
   return (
-    <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: "16px 20px", marginTop: 24 }}>
-      <div style={{ fontSize: 15, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em", marginBottom: 4 }}>Retenciones de Ambulancias</div>
+    <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: "14px 20px", marginTop: 24 }}>
+      <div style={{ fontSize: 15, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>Retenciones de Ambulancias</div>
       <div style={{ fontSize: 12, color: P.muted, marginBottom: 16 }}>Resumen según filtros aplicados</div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
         {[
           { label: "Total Retenciones", val: ambFiltrados.length, color: P.azul },
-          { label: "Tiempo Promedio",   val: `${promedio} min`,   color: "#93641F" },
-          { label: "Tiempo Máximo",     val: `${maximo} min`,     color: "#9C3B2E" },
+          { label: "Tiempo Promedio",   val: `${promedio} min`,   color: "#e67e22" },
+          { label: "Tiempo Máximo",     val: `${maximo} min`,     color: "#e74c3c" },
         ].map(({ label, val, color }) => (
-          <div key={label} style={{ background: "#fff", border: `1px solid ${P.border}`, borderTop: `3px solid ${color}`, borderRadius: 3, padding: "12px 15px" }}>
-            <div style={{ fontSize: 10, color: P.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</div>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 20, fontWeight: 600, color: P.text, marginTop: 4 }}>{val}</div>
+          <div key={label} style={{ background: P.azulLight, borderRadius: 2, padding: "12px 16px", borderLeft: `4px solid ${color}` }}>
+            <div style={{ fontSize: 11, color: P.muted, fontWeight: 600 }}>{label}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color }}>{val}</div>
           </div>
         ))}
       </div>
 
-      <div style={{ fontSize: 12, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em", marginBottom: 10 }}>Por establecimiento</div>
+      <div style={{ fontSize: 12, fontWeight: 800, color: P.azulDark, marginBottom: 10 }}>Por establecimiento</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10 }}>
         {Object.entries(porEstab).sort((a,b) => b[1].total - a[1].total).map(([estab, data]) => {
           const prom = data.tiempos.length ? Math.round(data.tiempos.reduce((a,b)=>a+b,0)/data.tiempos.length) : 0;
           return (
-            <div key={estab} style={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 3, padding: "10px 14px" }}>
+            <div key={estab} style={{ background: "#fff", border: `1px solid ${P.border}`, borderRadius: 8, padding: "10px 14px" }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, marginBottom: 4 }}>{estab}</div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ fontSize: 12, color: P.muted }}>Retenciones: <b style={{ color: P.azul }}>{data.total}</b></span>
-                <span style={{ fontSize: 12, color: P.muted }}>Prom: <b style={{ color: "#93641F" }}>{prom} min</b></span>
+                <span style={{ fontSize: 12, color: P.muted }}>Prom: <b style={{ color: "#e67e22" }}>{prom} min</b></span>
               </div>
             </div>
           );
@@ -7095,13 +7073,13 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
-      <div style={{ fontSize: 20, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em", marginBottom: 4 }}>Proyección de Demanda</div>
+      <div style={{ fontSize: 20, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>Proyección de Demanda</div>
       <div style={{ fontSize: 13, color: P.muted, marginBottom: 24 }}>
         Proyección estadística basada en el historial de atenciones registradas
       </div>
 
       {/* Controles */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 4, padding: "16px 20px", marginBottom: 24, display: "flex", gap: 24, flexWrap: "wrap", alignItems: "center" }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: "16px 20px", marginBottom: 24, display: "flex", gap: 24, flexWrap: "wrap", alignItems: "center" }}>
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, color: P.muted, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Método</div>
           <div style={{ display: "flex", gap: 8 }}>
@@ -7117,19 +7095,19 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
             ))}
           </div>
         </div>
-        <div style={{ marginLeft: "auto", background: P.azulLight, borderRadius: 3, padding: "10px 16px", fontSize: 12, color: P.azulDark }}>
+        <div style={{ marginLeft: "auto", background: P.azulLight, borderRadius: 8, padding: "10px 16px", fontSize: 12, color: P.azulDark }}>
           <b>{historial.length}</b> semanas históricas · <b>{proyecciones.length}</b> proyectadas
         </div>
       </div>
 
       {/* Nota semana excluida */}
-      <div style={{ background: "#F3EAD8", border: "1px solid #93641F", borderRadius: 3, padding: "10px 16px", marginBottom: 16, fontSize: 12, color: "#5C3F14" }}>
+      <div style={{ background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 8, padding: "10px 16px", marginBottom: 16, fontSize: 12, color: "#856404" }}>
         La semana en curso (<b>{seActual}</b>) y la anterior (<b>{seAnterior}</b>) fueron excluidas automáticamente por tener datos incompletos o aún en carga.
       </div>
 
       {/* Gráfico Demanda */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: "16px", marginBottom: 16 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em", marginBottom: 16 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: "14px 16px", marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: P.azulDark, marginBottom: 16 }}>
           Demanda Total
           <span style={{ fontSize: 11, fontWeight: 400, color: P.muted, marginLeft: 12 }}>— histórico &nbsp;&nbsp; - - - proyectado</span>
         </div>
@@ -7151,7 +7129,7 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
         </ResponsiveContainer>
         <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
           {dataGrafico.map((d, i) => d.proyectado && (
-            <div key={i} style={{ background: "#F3EAD8", border: "1px solid #93641F", borderRadius: 2, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "#5C3F14" }}>
+            <div key={i} style={{ background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 2, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "#856404" }}>
               {d.se.replace(" (proy)", "")}: {d.demanda.toLocaleString()}
             </div>
           ))}
@@ -7159,8 +7137,8 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
       </div>
 
       {/* Gráfico Respiratorias */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: "16px", marginBottom: 24 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em", marginBottom: 16 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: "14px 16px", marginBottom: 24 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: P.azulDark, marginBottom: 16 }}>
           Atenciones Respiratorias
           <span style={{ fontSize: 11, fontWeight: 400, color: P.muted, marginLeft: 12 }}>— histórico &nbsp;&nbsp; - - - proyectado</span>
         </div>
@@ -7170,12 +7148,12 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
             <XAxis dataKey="se" tick={{ fontSize: 10 }} interval={0} angle={-30} textAnchor="end" height={50} />
             <YAxis tick={{ fontSize: 11 }} />
             <Tooltip formatter={(val) => [val, "Respiratorias"]} />
-            <Bar dataKey="resp" fill="#93641F" radius={[4,4,0,0]} isAnimationActive={false} />
+            <Bar dataKey="resp" fill="#e67e22" radius={[4,4,0,0]} isAnimationActive={false} />
           </ComposedChart>
         </ResponsiveContainer>
         <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
           {dataGrafico.map((d, i) => d.proyectado && (
-            <div key={i} style={{ background: "#F3EAD8", border: "1px solid #93641F", borderRadius: 2, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "#5C3F14" }}>
+            <div key={i} style={{ background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 2, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "#856404" }}>
               {d.se.replace(" (proy)", "")}: {d.resp.toLocaleString()}
             </div>
           ))}
@@ -7183,8 +7161,8 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
       </div>
 
       {/* Tabla resumen proyecciones */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: "18px", marginBottom: 24 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em", marginBottom: 16 }}>Detalle de proyecciones</div>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 8, padding: "18px", marginBottom: 24 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: P.azulDark, marginBottom: 16 }}>Detalle de proyecciones</div>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
@@ -7196,13 +7174,13 @@ function Proyecciones({ registros, filtroPolo, filtroEstab, metodo, setMetodo, s
           <tbody>
             {proyecciones.map((p, i) => (
               <tr key={i} style={{ background: i % 2 === 0 ? "#fffbf0" : "#fff" }}>
-                <td style={{ padding: "10px 12px", fontSize: 13, fontWeight: 700, color: "#5C3F14", borderBottom: `1px solid ${P.border}` }}>
+                <td style={{ padding: "10px 12px", fontSize: 13, fontWeight: 700, color: "#856404", borderBottom: `1px solid ${P.border}` }}>
                   {p.se}
                 </td>
                 <td style={{ padding: "10px 12px", fontSize: 13, fontWeight: 700, color: P.azul, textAlign: "right", borderBottom: `1px solid ${P.border}` }}>
                   {p.demanda.toLocaleString()}
                 </td>
-                <td style={{ padding: "10px 12px", fontSize: 13, fontWeight: 700, color: "#93641F", textAlign: "right", borderBottom: `1px solid ${P.border}` }}>
+                <td style={{ padding: "10px 12px", fontSize: 13, fontWeight: 700, color: "#e67e22", textAlign: "right", borderBottom: `1px solid ${P.border}` }}>
                   {p.resp.toLocaleString()}
                 </td>
               </tr>
@@ -7327,11 +7305,11 @@ function TabTiemposEspera({ registros, P, inpS }) {
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-      <div style={{ fontSize: 20, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em", marginBottom: 4 }}>Tiempos de Espera</div>
+      <div style={{ fontSize: 20, fontWeight: 800, color: P.azulDark, marginBottom: 4 }}>Tiempos de Espera</div>
       <div style={{ fontSize: 13, color: P.muted, marginBottom: 16 }}>Análisis por establecimiento, semana epidemiológica y día</div>
 
       {/* Filtros propios */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 4, padding: "14px 18px", marginBottom: 20, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: "14px 18px", marginBottom: 20, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, alignSelf: "center" }}>Filtros</div>
 
         <div>
@@ -7382,28 +7360,28 @@ function TabTiemposEspera({ registros, P, inpS }) {
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12, marginBottom: 24 }}>
         {[
-          { label: "Promedio Red",     val: `${promGeneral} min`, color: promGeneral > 180 ? "#9C3B2E" : P.azul,  alerta: promGeneral > 180 },
-          { label: "Máximo registrado",val: `${maxGeneral} min`,  color: maxGeneral > 180  ? "#9C3B2E" : P.amber, alerta: maxGeneral > 180  },
-          { label: "Centros en alerta",val: `${nAlerta} de ${dataEstab.length}`, color: nAlerta > 0 ? "#9C3B2E" : P.verde, alerta: nAlerta > 0 },
+          { label: "Promedio Red",     val: `${promGeneral} min`, color: promGeneral > 180 ? "#e74c3c" : P.azul,  alerta: promGeneral > 180 },
+          { label: "Máximo registrado",val: `${maxGeneral} min`,  color: maxGeneral > 180  ? "#e74c3c" : P.amber, alerta: maxGeneral > 180  },
+          { label: "Centros en alerta",val: `${nAlerta} de ${dataEstab.length}`, color: nAlerta > 0 ? "#e74c3c" : P.verde, alerta: nAlerta > 0 },
           { label: "Tendencia (últ. 8 SE)", val: tendencia === 0 ? "Estable" : `${tendencia > 0 ? "▲" : "▼"} ${Math.abs(tendencia)} min`,
-            color: tendencia > 15 ? "#9C3B2E" : tendencia < -15 ? P.verde : P.amber, alerta: tendencia > 15 },
+            color: tendencia > 15 ? "#e74c3c" : tendencia < -15 ? P.verde : P.amber, alerta: tendencia > 15 },
         ].map(({ label, val, color, alerta }) => (
           <div key={label} style={{
-            background: "#fff", borderRadius: 3, padding: "12px 15px",
-            borderTop: `3px solid ${color}`, border: alerta ? `1.5px solid ${P.rojo}` : `1px solid ${P.border}`, borderTopWidth: 3, borderTopColor: color,
+            background: alerta ? "#fdecea" : P.azulLight, borderRadius: 2, padding: "12px 16px",
+            borderLeft: `4px solid ${color}`, border: alerta ? `1.5px solid #e74c3c` : undefined,
           }}>
-            <div style={{ fontSize: 10, color: P.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</div>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 18, fontWeight: 600, color: P.text, marginTop: 4 }}>{val}</div>
-            {alerta && <div style={{ fontSize: 10, color: P.rojo, fontWeight: 700, marginTop: 2 }}>Sobre umbral</div>}
+            <div style={{ fontSize: 11, color: P.muted, fontWeight: 600 }}>{label}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color }}>{val}</div>
+            {alerta && <div style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700, marginTop: 2 }}>Sobre umbral</div>}
           </div>
         ))}
       </div>
 
       {/* Por establecimiento */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: 18, marginBottom: 14 }}>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: 18, marginBottom: 12 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>Por Establecimiento</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, textTransform: "uppercase", letterSpacing: "0.06em" }}>Por Establecimiento</div>
             <div style={{ fontSize: 11, color: P.muted }}>Comparación entre centros — umbral de alerta: 180 min</div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
@@ -7418,11 +7396,11 @@ function TabTiemposEspera({ registros, P, inpS }) {
               <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={v => `${v}m`} />
               <YAxis type="category" dataKey="establecimiento" width={148} tick={{ fontSize: 10 }} />
               <Tooltip formatter={(v, n) => [`${v} min`, n === "promedio" ? "Promedio" : n === "maximo" ? "Máximo" : "Mínimo"]} />
-              <ReferenceLine x={180} stroke="#9C3B2E" strokeDasharray="4 2"
-                label={{ value: "180 min", position: "top", fontSize: 10, fill: "#9C3B2E" }} />
+              <ReferenceLine x={180} stroke="#e74c3c" strokeDasharray="4 2"
+                label={{ value: "180 min", position: "top", fontSize: 10, fill: "#e74c3c" }} />
               {vistaEstab === "promedio" ? (
                 <Bar dataKey="promedio" radius={[0,6,6,0]} barSize={20}>
-                  {dataEstab.map((d,i) => <Cell key={i} fill={d.promedio > 180 ? "#9C3B2E" : P.azul} />)}
+                  {dataEstab.map((d,i) => <Cell key={i} fill={d.promedio > 180 ? "#e74c3c" : P.azul} />)}
                 </Bar>
               ) : (<>
                 <Bar dataKey="minimo"   fill={`${P.verde}90`} radius={[0,0,0,0]} barSize={10} stackId="a" />
@@ -7436,7 +7414,7 @@ function TabTiemposEspera({ registros, P, inpS }) {
           <div style={{ overflow: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 280 }}>
               <thead>
-                <tr style={{ background: P.azulDark }}>
+                <tr style={{ background: P.azulDark, letterSpacing: "0.04em", fontSize: 11 }}>
                   {["#", "Establecimiento", "Prom.", "Mín.", "Máx.", "Días"].map(h => (
                     <th key={h} style={{ padding: "8px 10px", color: "#fff", fontWeight: 700, textAlign: h === "Establecimiento" ? "left" : "right", whiteSpace: "nowrap" }}>{h}</th>
                   ))}
@@ -7444,12 +7422,12 @@ function TabTiemposEspera({ registros, P, inpS }) {
               </thead>
               <tbody>
                 {dataEstab.map((d, i) => (
-                  <tr key={d.establecimiento} style={{ background: d.alerta ? "#F2E7E2" : i % 2 === 0 ? "#fff" : P.bg }}>
+                  <tr key={d.establecimiento} style={{ background: d.alerta ? "#fdecea" : i % 2 === 0 ? "#fff" : P.bg }}>
                     <td style={{ padding: "8px 10px", textAlign: "right", color: P.muted, fontWeight: 700 }}>{i+1}</td>
-                    <td style={{ padding: "8px 10px", fontWeight: 700, color: d.alerta ? "#9C3B2E" : P.azulDark }}>
+                    <td style={{ padding: "8px 10px", fontWeight: 700, color: d.alerta ? "#e74c3c" : P.azulDark }}>
                       {d.alerta && ""}{d.establecimiento}
                     </td>
-                    <td style={{ padding: "8px 10px", textAlign: "right", fontWeight: 800, color: d.alerta ? "#9C3B2E" : P.azul }}>{d.promedio}</td>
+                    <td style={{ padding: "8px 10px", textAlign: "right", fontWeight: 800, color: d.alerta ? "#e74c3c" : P.azul }}>{d.promedio}</td>
                     <td style={{ padding: "8px 10px", textAlign: "right", color: P.verde }}>{d.minimo}</td>
                     <td style={{ padding: "8px 10px", textAlign: "right", color: P.amber }}>{d.maximo}</td>
                     <td style={{ padding: "8px 10px", textAlign: "right", color: P.muted }}>{d.n}</td>
@@ -7462,8 +7440,8 @@ function TabTiemposEspera({ registros, P, inpS }) {
       </div>
 
       {/* Por SE */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: 18, marginBottom: 14 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em", marginBottom: 4 }}>Promedio de la Red por Semana Epidemiológica</div>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: 18, marginBottom: 12 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Promedio de la Red por Semana Epidemiológica</div>
         <div style={{ fontSize: 11, color: P.muted, marginBottom: 14 }}>Evolución semanal del tiempo de espera promedio</div>
         <ResponsiveContainer width="100%" height={240}>
           <ComposedChart data={dataSE} margin={{ top: 4, right: 24, left: 0, bottom: 4 }}>
@@ -7471,9 +7449,9 @@ function TabTiemposEspera({ registros, P, inpS }) {
             <XAxis dataKey="se" tick={{ fontSize: 10 }} interval={dataSE.length > 20 ? Math.floor(dataSE.length/8) : 0} angle={dataSE.length > 15 ? -30 : 0} textAnchor={dataSE.length > 15 ? "end" : "middle"} height={dataSE.length > 15 ? 45 : 25} />
             <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v}m`} />
             <Tooltip formatter={(v, n) => [`${v} min`, n === "promedio" ? "Promedio red" : n === "maximo" ? "Máximo" : "Mínimo"]} />
-            <ReferenceLine y={180} stroke="#9C3B2E" strokeDasharray="4 2" label={{ value: "180 min", position: "right", fontSize: 10, fill: "#9C3B2E" }} />
+            <ReferenceLine y={180} stroke="#e74c3c" strokeDasharray="4 2" label={{ value: "180 min", position: "right", fontSize: 10, fill: "#e74c3c" }} />
             <Bar dataKey="promedio" radius={[4,4,0,0]} barSize={dataSE.length > 20 ? 6 : 14}>
-              {dataSE.map((d,i) => <Cell key={i} fill={d.promedio > 180 ? "#9C3B2E" : P.azul} />)}
+              {dataSE.map((d,i) => <Cell key={i} fill={d.promedio > 180 ? "#e74c3c" : P.azul} />)}
             </Bar>
             <Line type="monotone" dataKey="promedio" stroke={P.azul} strokeWidth={2} dot={false} />
           </ComposedChart>
@@ -7481,8 +7459,8 @@ function TabTiemposEspera({ registros, P, inpS }) {
       </div>
 
       {/* Por día */}
-      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 3, padding: 18, marginBottom: 14 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: P.azulDark, fontFamily: "var(--font-display)", letterSpacing: "-0.01em", marginBottom: 4 }}>Promedio de la Red por Día</div>
+      <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: 2, padding: 18, marginBottom: 12 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: P.azulDark, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Promedio de la Red por Día</div>
         <div style={{ fontSize: 11, color: P.muted, marginBottom: 14 }}>Evolución diaria del tiempo de espera — barras rojas superan 180 min</div>
         <ResponsiveContainer width="100%" height={240}>
           <ComposedChart data={dataDia} margin={{ top: 4, right: 24, left: 0, bottom: 4 }}>
@@ -7490,9 +7468,9 @@ function TabTiemposEspera({ registros, P, inpS }) {
             <XAxis dataKey="dia" tick={{ fontSize: 10 }} interval={dataDia.length > 20 ? Math.floor(dataDia.length/8) : 0} angle={dataDia.length > 15 ? -30 : 0} textAnchor={dataDia.length > 15 ? "end" : "middle"} height={dataDia.length > 15 ? 45 : 25} />
             <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v}m`} />
             <Tooltip formatter={v => [`${v} min`, "Promedio red"]} />
-            <ReferenceLine y={180} stroke="#9C3B2E" strokeDasharray="4 2" label={{ value: "180 min", position: "right", fontSize: 10, fill: "#9C3B2E" }} />
+            <ReferenceLine y={180} stroke="#e74c3c" strokeDasharray="4 2" label={{ value: "180 min", position: "right", fontSize: 10, fill: "#e74c3c" }} />
             <Bar dataKey="promedio" radius={[3,3,0,0]} barSize={dataDia.length > 60 ? 3 : 8}>
-              {dataDia.map((d,i) => <Cell key={i} fill={d.promedio > 180 ? "#9C3B2E" : `${P.azul}90`} />)}
+              {dataDia.map((d,i) => <Cell key={i} fill={d.promedio > 180 ? "#e74c3c" : `${P.azul}90`} />)}
             </Bar>
             <Line type="monotone" dataKey="promedio" stroke={P.azul} strokeWidth={2} dot={false} />
           </ComposedChart>
@@ -7501,13 +7479,13 @@ function TabTiemposEspera({ registros, P, inpS }) {
 
       {/* Días críticos */}
       {diasCriticos.length > 0 && (
-        <div style={{ background: "#F2E7E2", border: "1.5px solid #9C3B2E", borderRadius: 3, padding: 18 }}>
+        <div style={{ background: "#fdecea", border: "1.5px solid #e74c3c", borderRadius: 2, padding: 16 }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: "#c0392b", marginBottom: 4 }}>Días Críticos — Tiempo de Espera Superior a 180 min</div>
           <div style={{ fontSize: 11, color: "#c0392b", marginBottom: 14 }}>Top 20 registros con mayor tiempo de espera según filtros aplicados</div>
           <div style={{ overflow: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 340 }}>
               <thead>
-                <tr style={{ background: "#9C3B2E" }}>
+                <tr style={{ background: "#e74c3c" }}>
                   {["Fecha", "SE", "Establecimiento", "T° Espera"].map(h => (
                     <th key={h} style={{ padding: "8px 12px", color: "#fff", fontWeight: 700, textAlign: h === "T° Espera" ? "right" : "left", whiteSpace: "nowrap" }}>{h}</th>
                   ))}
@@ -7588,20 +7566,20 @@ function ModalPDF({ registros, registrosAmbulancias, onClose, P, getPolo }) {
 
   const titulo  = `Reporte Urgencias APS${pdfEstab!=="Todos"?` — ${pdfEstab}`:pdfPolo!=="Todos"?` — ${pdfPolo}`:""}`;
   const periodo = pdfSEDesde||pdfSEHasta ? `${pdfSEDesde||"Inicio"} → ${pdfSEHasta||"Fin"}` : "Período completo";
-  const sel = { background:"#fff", border:`1px solid ${P.border}`, borderRadius:2, padding:"6px 10px", fontSize:12, color:P.text };
+  const sel = { background:"#fff", border:`1px solid ${P.border}`, borderRadius:6, padding:"6px 10px", fontSize:12, color:P.text };
 
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:1000, display:"flex", alignItems:"flex-start", justifyContent:"center", overflowY:"auto", padding:"20px 0" }}>
-      <div style={{ background:"#fff", borderRadius:3, width:"min(800px,95vw)", margin:"auto" }}>
+      <div style={{ background:"#fff", borderRadius:10, width:"min(800px,95vw)", margin:"auto" }}>
 
         <div style={{ background:P.azul, padding:"14px 22px", borderRadius:"10px 10px 0 0", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
           <div style={{ color:"#fff", fontWeight:700, fontSize:14 }}>Exportar Reporte</div>
-          <button onClick={onClose} aria-label="Cerrar" style={{ background:"rgba(255,255,255,0.2)", border:"none", borderRadius:3, color:"#fff", padding:"5px 8px", cursor:"pointer", display:"flex", alignItems:"center" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          <button onClick={onClose} style={{ background:"rgba(255,255,255,0.2)", border:"none", borderRadius:6, color:"#fff", padding:"3px 10px", cursor:"pointer", fontSize:16 }}>✕</button>
         </div>
 
         <div style={{ padding:"18px 22px" }}>
           {/* Filtros */}
-          <div style={{ background:P.azulLight, borderRadius:3, padding:"12px 16px", marginBottom:16 }}>
+          <div style={{ background:P.azulLight, borderRadius:8, padding:"12px 16px", marginBottom:16 }}>
             <div style={{ fontSize:12, fontWeight:800, color:P.azulDark, marginBottom:10 }}>Filtros del reporte</div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))", gap:10 }}>
               <div>
@@ -7651,7 +7629,7 @@ function ModalPDF({ registros, registrosAmbulancias, onClose, P, getPolo }) {
                   display:"flex", alignItems:"center", gap:7, cursor:"pointer",
                   background: secciones[key] ? P.azulLight : "#f9fafb",
                   border:`1px solid ${secciones[key] ? P.azul : P.border}`,
-                  borderRadius:2, padding:"7px 11px", fontSize:12,
+                  borderRadius:6, padding:"7px 11px", fontSize:12,
                   fontWeight: secciones[key] ? 700 : 400,
                   color: secciones[key] ? P.azulDark : P.muted,
                 }}>
@@ -7666,7 +7644,7 @@ function ModalPDF({ registros, registrosAmbulancias, onClose, P, getPolo }) {
           </div>
 
           {/* Preview */}
-          <div id="pdf-preview" style={{ border:`1px solid ${P.border}`, borderRadius:3, padding:18, background:"#fff", fontSize:11, maxHeight:420, overflowY:"auto" }}>
+          <div id="pdf-preview" style={{ border:`1px solid ${P.border}`, borderRadius:8, padding:18, background:"#fff", fontSize:11, maxHeight:420, overflowY:"auto" }}>
             <div style={{ borderBottom:`3px solid ${P.azul}`, paddingBottom:8, marginBottom:12, display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
               <div>
                 <div style={{ fontSize:14, fontWeight:800, color:P.azul }}>{titulo}</div>
@@ -7684,14 +7662,14 @@ function ModalPDF({ registros, registrosAmbulancias, onClose, P, getPolo }) {
                   {[
                     { label:"Demanda Total",   val:tot.demanda.toLocaleString("es-CL"),   color:P.azul },
                     { label:"Atendidos",       val:tot.atendidos.toLocaleString("es-CL"), color:P.verde },
-                    { label:"Tasa Abandono",   val:`${tasaAbandono}%`,                    color:"#9C3B2E" },
-                    { label:"% Respiratorio",  val:`${pctResp}%`,                         color:"#93641F" },
-                    { label:"Abandonos",       val:tot.abandonos.toLocaleString("es-CL"), color:"#9C3B2E" },
-                    { label:"Respiratorias",   val:tot.resp.toLocaleString("es-CL"),       color:"#93641F" },
-                    { label:"T° Espera Prom.", val:`${promEspera} min`,                   color:promEspera>180?"#9C3B2E":P.azul },
+                    { label:"Tasa Abandono",   val:`${tasaAbandono}%`,                    color:"#C0392B" },
+                    { label:"% Respiratorio",  val:`${pctResp}%`,                         color:"#B45309" },
+                    { label:"Abandonos",       val:tot.abandonos.toLocaleString("es-CL"), color:"#C0392B" },
+                    { label:"Respiratorias",   val:tot.resp.toLocaleString("es-CL"),       color:"#B45309" },
+                    { label:"T° Espera Prom.", val:`${promEspera} min`,                   color:promEspera>180?"#C0392B":P.azul },
                     { label:"N° Semanas",      val:[...new Set(base.map(r=>r.semana_epi).filter(Boolean))].length, color:P.muted },
                   ].map(({ label, val, color }) => (
-                    <div key={label} style={{ background:"#fff", border:`1px solid ${P.border}`, borderTop:`2px solid ${color}`, borderRadius:2, padding:"6px 8px" }}>
+                    <div key={label} style={{ background:P.azulLight, borderRadius:5, padding:"6px 8px", borderLeft:`3px solid ${color}` }}>
                       <div style={{ fontSize:9, color:P.muted }}>{label}</div>
                       <div style={{ fontSize:13, fontWeight:800, color }}>{val}</div>
                     </div>
@@ -7753,10 +7731,10 @@ function ModalPDF({ registros, registrosAmbulancias, onClose, P, getPolo }) {
                   <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:6 }}>
                     {[
                       { label:"Total",    val:ambBase.length,                                                                     color:P.azul },
-                      { label:"Prom.",    val:tiempos.length?`${Math.round(tiempos.reduce((a,b)=>a+b,0)/tiempos.length)} min`:"—",color:"#93641F" },
-                      { label:"Máximo",   val:tiempos.length?`${Math.max(...tiempos)} min`:"—",                                    color:"#9C3B2E" },
+                      { label:"Prom.",    val:tiempos.length?`${Math.round(tiempos.reduce((a,b)=>a+b,0)/tiempos.length)} min`:"—",color:"#B45309" },
+                      { label:"Máximo",   val:tiempos.length?`${Math.max(...tiempos)} min`:"—",                                    color:"#C0392B" },
                     ].map(({label,val,color})=>(
-                      <div key={label} style={{ background:"#fff", border:`1px solid ${P.border}`, borderTop:`2px solid ${color}`, borderRadius:2, padding:"6px 8px" }}>
+                      <div key={label} style={{ background:P.azulLight, borderRadius:5, padding:"6px 8px", borderLeft:`3px solid ${color}` }}>
                         <div style={{ fontSize:9, color:P.muted }}>{label}</div>
                         <div style={{ fontSize:13, fontWeight:800, color }}>{val}</div>
                       </div>
@@ -7784,8 +7762,8 @@ function ModalPDF({ registros, registrosAmbulancias, onClose, P, getPolo }) {
                       <td style={{ padding:"3px 6px", fontWeight:600 }}>{r.establecimiento}</td>
                       <td style={{ padding:"3px 6px", textAlign:"right" }}>{r.demanda_total}</td>
                       <td style={{ padding:"3px 6px", textAlign:"right", color:P.verde }}>{r.pacientes_atendidos}</td>
-                      <td style={{ padding:"3px 6px", textAlign:"right", color:"#93641F" }}>{r.atenciones_respiratorias}</td>
-                      <td style={{ padding:"3px 6px", textAlign:"right", color:"#9C3B2E" }}>{r.abandonos}</td>
+                      <td style={{ padding:"3px 6px", textAlign:"right", color:"#B45309" }}>{r.atenciones_respiratorias}</td>
+                      <td style={{ padding:"3px 6px", textAlign:"right", color:"#C0392B" }}>{r.abandonos}</td>
                       <td style={{ padding:"3px 6px", textAlign:"right" }}>{r.tiempo_espera?`${r.tiempo_espera}m`:"—"}</td>
                     </tr>
                   ))}</tbody>
@@ -7801,10 +7779,10 @@ function ModalPDF({ registros, registrosAmbulancias, onClose, P, getPolo }) {
           </div>
 
           <div style={{ display:"flex", gap:8, justifyContent:"flex-end", marginTop:14 }}>
-            <button onClick={onClose} style={{ padding:"7px 18px", borderRadius:2, border:`1px solid ${P.border}`, background:"#fff", color:P.text, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+            <button onClick={onClose} style={{ padding:"7px 18px", borderRadius:6, border:`1px solid ${P.border}`, background:"#fff", color:P.text, cursor:"pointer", fontSize:12, fontWeight:600 }}>
               Cancelar
             </button>
-            <button onClick={() => window.print()} style={{ padding:"7px 22px", borderRadius:2, border:"none", background:P.rojo, color:"#fff", cursor:"pointer", fontSize:12, fontWeight:700 }}>
+            <button onClick={() => window.print()} style={{ padding:"7px 22px", borderRadius:6, border:"none", background:P.rojo, color:"#fff", cursor:"pointer", fontSize:12, fontWeight:700 }}>
               Imprimir / Guardar como PDF
             </button>
           </div>
